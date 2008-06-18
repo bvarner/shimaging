@@ -1,0 +1,46 @@
+<html>
+	<head>
+		<title>Shimaging - Frequently Asked Questions</title>
+	</head>
+	<body>
+		<center>
+			<a href="index.html"><img src="shimaging_title.png" alt="Imaging, Shimaging!" border="0"/></a>
+			<i><p>An advanced Imaging widget for Java Swing applications</p></i>
+			[<a href="index.html">Home</a>] [<a href="faq.html">F.A.Q.</a>] [<a href="shimaging/index.html">Java API</a>] [<a href="use.html">General Usage</a>] [<a href="advanced.html">Advanced Topics</a>] [<a href="http://sourceforge.net/projects/shimaging">SF Project</a>]
+			<hr/>
+		</center>
+		
+		
+		<h1>Frequently Asked Questions</h1>
+		
+		<p><b>What JDK / JRE does Shimaging target?</b><br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;Java Standard Edition, 1.5. Although some ImageSource implementations will require the JAI core libraries be avilable.</p>
+		
+		<p><b>Could it be backported to 1.4?</b><br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;Sure, but I certainly have no interest in doing that work. If you need 1.4 support, I'd strongly urge you to upgrade. It's not 2002 anymore.</p>
+		
+		<p><b>What kind of Image objects can Shimaging handle?</b><br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;Shimaging uses BufferedImages for a number of reasons. BufferedImages are easy to work with, easy to create, and it's not hard to convert any Image object into a BufferedImage. For example, a simple way to convert an AWT Image object into a BufferedImage goes something like...
+		<pre>
+	// Assumes that Image foo is already loaded, the current class implements ImageObserver, and no exceptions or error states occur.
+	// There's quite a bit to be filled out here if you actually wanted to try something like this.
+	public BufferedImage getAsBuffered(Image img) {
+		BufferedImage bufImage = new BufferedImage(foo.getWidth(this), foo.getHeight(this), BufferedImage.TYPE_INT_ARGB);
+		Graphics g = bufImage.getGraphics();
+		g.drawImage(foo, new AffineTransform(), this);
+		d.dispose();
+		
+		return bufImage;
+	}
+		</pre></p>
+		
+		<p><b>I've made changes to Shimaging. Do you want them?</b><br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;Absolutely! While some of your changes may be highly-specific to your needs, we'd love to hear what you're using Shimaging for, and if some of your uses seem common, we'd like to be able to include them for other users to benefit from as well.</p>
+		
+		<p><b>How can I get involved in the future of Shimaging?</b><br/>
+		&nbsp;&nbsp;&nbsp;&nbsp;Sign up for the mailing list and send diffs, get a sourceforge developer account and request access, or just report bugs, request features, and join the community.</p>
+		
+		<hr>
+		<a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=128730&amp;type=5" width="210" height="62" border="0" alt="SourceForge.net Logo" /></a>
+	</body>
+</html>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="Shimaging" default="package" basedir=".">
+	<property name="project.name" value="shimaging"/>
+	<property file="build.properties"/>
+	
+	<path id="jai.path">
+		<fileset dir="lib/jai" includes="*.jar"/>
+	</path>
+	
+	<target name="javadocs">
+		<javadoc packagenames="com.*" 
+				sourcepath="src" 
+				destdir="website/${project.name}" 
+				author="true" 
+				version="true" 
+				Windowtitle="${project.name} API"
+		>
+			<classpath refid="jai.path"/>
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>		
+		</javadoc>
+	</target>
+	
+	<target name="clean">
+		<delete dir="classes"/>
+		<delete dir="website/shimaging"/>
+		<delete>
+			<fileset dir="." includes="${project.name}**"/>
+			<fileset dir="." includes="*.log"/>
+		</delete>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="classes"/>
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac srcdir="src" 
+		       destdir="classes" 
+			  debug="true" 
+			  source="1.5" 
+			  target="1.5"
+			  classpathref="jai.path"
+		/>
+		
+		<copy toDir="classes">
+			<fileset dir="resources" includes="**/*.png"/>
+		</copy>
+	</target>
+	
+	<target name="package" depends="compile">
+		<jar file="${project.name}.jar">
+			<fileset dir="classes"/>
+			<manifest>
+				<attribute name="Main-Class" value="com.ngs.image.TestApp"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	
+	<target name="run" depends="package">
+		<java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
+               <classpath>
+				<path refid="jai.path"/>
+				<filelist dir="." files="${project.name}.jar"/>
+			</classpath>
+<!--			<jvmarg value="-Xprof:cpu=times,file=tiffBench-log.txt"/>-->				
+		</java>
+	</target>
+        
+        <target name="debug" depends="package">
+            <java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
+                <classpath>
+                        <path refid="jai.path"/>
+                        <filelist dir="." files="${project.name}.jar"/>
+                </classpath>
+                <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,address=8000 -Djava.compiler=NONE"/>
+            </java>
+        </target>
+        
+        
+  <target name="profile" depends="package" description="Profile Project">
+    <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
+
+    <nbprofiledirect>
+                <classpath>
+                        <path refid="jai.path"/>
+                        <filelist dir="." files="${project.name}.jar"/>
+                </classpath>
+    </nbprofiledirect>
+
+    <java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
+        <jvmarg value="${profiler.info.jvmargs.agent}"/>
+                    	<classpath>
+				<path refid="jai.path"/>
+				<filelist dir="." files="${project.name}.jar"/>
+			</classpath>
+    </java>
+  </target>        
+</project>

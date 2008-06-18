@@ -1,0 +1,36 @@
+package com.ngs.image.source;
+
+import com.ngs.image.ImageSource;
+import java.awt.image.BufferedImage;
+
+/**
+ * A PagelessSource is an ImageSource that "fakes" having more than one page.
+ * The number of pages 'faked' can be set during or post-construction.
+ */
+public abstract class PagelessSource extends DefaultThumbnailSource {
+	int pages = 0;
+	
+	protected PagelessSource(int fakePages) {
+		pages = fakePages;
+	}
+	
+	
+	public void setFakePages(int fakePages) {
+		this.pages = fakePages;
+	}
+	
+	public BufferedImage getImage(int index) {
+		return getImage();
+	}
+	
+	public int getImageCount() {
+		return pages;
+	}
+	
+	
+	public abstract void dispose();
+	
+	public abstract BufferedImage getImage();
+	
+	public abstract String getImageName();
+}
