@@ -7,7 +7,7 @@
 		<fileset dir="lib/jai" includes="*.jar"/>
 	</path>
 	
-	<target name="javadocs">
+	<target name="javadocs" description="Generate JavaDoc Documentation">
 		<javadoc packagenames="com.*" 
 				sourcepath="src" 
 				destdir="website/${project.name}" 
@@ -33,7 +33,7 @@
 		<mkdir dir="classes"/>
 	</target>
 	
-	<target name="compile" depends="init">
+	<target name="compile" depends="init" description="Compile Shimaging">
 		<javac srcdir="src" 
 		       destdir="classes" 
 			  debug="true" 
@@ -47,7 +47,7 @@
 		</copy>
 	</target>
 	
-	<target name="package" depends="compile">
+	<target name="package" depends="compile" description="Creates shimaging.jar">
 		<jar file="${project.name}.jar">
 			<fileset dir="classes"/>
 			<manifest>
@@ -56,44 +56,57 @@
 		</jar>
 	</target>
 	
-	
-	<target name="run" depends="package">
+	<target name="run" depends="package" description="Runs the TestApp">
 		<java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
                <classpath>
 				<path refid="jai.path"/>
 				<filelist dir="." files="${project.name}.jar"/>
 			</classpath>
-<!--			<jvmarg value="-Xprof:cpu=times,file=tiffBench-log.txt"/>-->				
 		</java>
 	</target>
         
-        <target name="debug" depends="package">
-            <java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
-                <classpath>
-                        <path refid="jai.path"/>
-                        <filelist dir="." files="${project.name}.jar"/>
-                </classpath>
-                <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,address=8000 -Djava.compiler=NONE"/>
-            </java>
-        </target>
-        
-        
-  <target name="profile" depends="package" description="Profile Project">
-    <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
-
-    <nbprofiledirect>
-                <classpath>
-                        <path refid="jai.path"/>
-                        <filelist dir="." files="${project.name}.jar"/>
-                </classpath>
-    </nbprofiledirect>
-
-    <java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
-        <jvmarg value="${profiler.info.jvmargs.agent}"/>
-                    	<classpath>
+	<target name="debug" depends="package" description="Runs the TestApp with dt_socket listening at port 8000">
+		<java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
+			<classpath>
 				<path refid="jai.path"/>
 				<filelist dir="." files="${project.name}.jar"/>
 			</classpath>
-    </java>
-  </target>        
+			<jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,address=8000 -Djava.compiler=NONE"/>
+		</java>
+	</target>
+	
+	<target name="make-release" depends="package" description="Builds a Release Distribution">
+		<propertyfile file="resources/release.properties">
+			<entry key="version.major" type="int" value="0"/>
+			<entry key="version.minor" type="int" value="9"/>
+			<entry key="version.build" type="int" operation="+" value="1"/>
+		</propertyfile>
+		
+		<property file="resources/release.properties"/>
+		
+		<mkdir dir="../shimaging_release_${version.major}_${version.minor}"/>
+		<copy toDir="../shimaging_release_${version.major}_${version.minor}" file="shimaging.jar"/>
+		<copy toDir="../shimaging_release_${version.major}_${version.minor}" file="LICENSE.TXT"/>
+		<copy toDir="../shimaging_release_${version.major}_${version.minor}" file="README.TXT"/>
+	</target>
+	
+    <!-- Once upon a time I used netbeans 6 to profile this thing -->
+	<target name="profile" depends="package" description="Profile Project">
+	<fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
+		
+		<nbprofiledirect>
+			<classpath>
+				<path refid="jai.path"/>
+				<filelist dir="." files="${project.name}.jar"/>
+			</classpath>
+		</nbprofiledirect>
+		
+		<java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
+			<jvmarg value="${profiler.info.jvmargs.agent}"/>
+			<classpath>
+				<path refid="jai.path"/>
+				<filelist dir="." files="${project.name}.jar"/>
+			</classpath>
+		</java>
+	</target>
 </project>
