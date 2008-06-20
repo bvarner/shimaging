@@ -23,7 +23,7 @@
 		<pre>
 	// Assumes that Image foo is already loaded, the current class implements ImageObserver, and no exceptions or error states occur.
 	// There's quite a bit to be filled out here if you actually wanted to try something like this.
-	public BufferedImage getAsBuffered(Image img) {
+	public BufferedImage getAsBuffered(Image foo) {
 		BufferedImage bufImage = new BufferedImage(foo.getWidth(this), foo.getHeight(this), BufferedImage.TYPE_INT_ARGB);
 		Graphics g = bufImage.getGraphics();
 		g.drawImage(foo, new AffineTransform(), this);
