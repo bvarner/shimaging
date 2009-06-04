@@ -4,6 +4,7 @@ import com.ngs.image.ImageSource;
 
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
+import java.awt.Composite;
 
 /**
  * This subclass of CompositeSource will scale all source layers to the exact
@@ -32,6 +33,21 @@ public class ScalingCompositeSource extends CompositeSource {
 		init();
 	}
 	
+	
+	public ScalingCompositeSource(ImageSource bottom, Composite mode) {
+		super(bottom, mode);
+		init();
+	}
+	
+	public ScalingCompositeSource(ImageSource bottom, boolean visible) {
+		super(bottom, visible);
+		init();
+	}
+	
+	public ScalingCompositeSource(ImageSource bottom, Composite mode, boolean visible) {
+		super(bottom, mode, visible);
+		init();
+	}
 	
 	/**
 	 * Sets up the default threashold (8), and requires the next 

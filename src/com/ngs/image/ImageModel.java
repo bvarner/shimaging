@@ -15,10 +15,16 @@ import java.awt.image.RescaleOp;
 import java.awt.image.ShortLookupTable;
 import java.awt.geom.AffineTransform;
 
+import java.awt.Graphics;
+import java.awt.print.Printable;
+import java.awt.print.PageFormat;
+
 import java.awt.Dimension;
 import java.awt.Rectangle;
 
 import com.ngs.image.filter.BrightnessContrastOp;
+
+import java.util.prefs.*;
 
 
 /**
@@ -27,7 +33,7 @@ import com.ngs.image.filter.BrightnessContrastOp;
  *
  * @author Bryan.Varner
  */
-public class ImageModel {
+public class ImageModel implements Printable, PreferenceChangeListener {
 	public static final int FIT_NONE = 0;
 	public static final int FIT_WIDTH = 1;
 	public static final int FIT_HEIGHT = 2;
@@ -39,6 +45,7 @@ public class ImageModel {
 	
 	float scalex;
 	float scaley;
+	boolean preserveAspect;
 	
 	int rotation;
 	
@@ -66,32 +73,39 @@ public class ImageModel {
 	PriorityBlockingQueue renderQueue;
 	Thread renderThread;
 	
+	int printIndexOffset = 0;
+	String printHeader = "";
+	
+	Preferences prefsNode;
+	
 	/**
 	 * Creates a new ImageModel with a small thread pool for handling 
 	 * manipulation commands asynchronously, and no ImageSource.
 	 */
 	public ImageModel() {
 		listeners = new ArrayList<ImageEventListener>();
+		prefsNode = Preferences.userNodeForPackage(this.getClass());
 		
 		image = null;
 		source = null;
 		
 		page = 0;
 		
-		scalex = 1.0f;
-		scaley = 1.0f;
+		scalex = prefsNode.getFloat("DefaultScaleX", 1.0f);
+		scaley = prefsNode.getFloat("DefaultScaleY", 1.0f);
 		fitSize = null;
-		fitMode = FIT_NONE;
+		fitMode = prefsNode.getInt("DefaultFitMode", FIT_NONE);
 		oldScalex = scalex;
 		oldScaley = scaley;
+		preserveAspect = prefsNode.getBoolean("FitPreserveAspect", true);
 		
-		rotation = 0;
+		rotation = prefsNode.getInt("DefaultRotation", 0);
 		
 		transformOp = new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BICUBIC);
 		
-		contrast = 1.0f;
-		brightness = 0f;
-		invert = false;
+		contrast = prefsNode.getFloat("DefaultContrast", 1.0f);
+		brightness = prefsNode.getFloat("DefaultBrightness", 0f);
+		invert = prefsNode.getBoolean("DefaultInvert", false);
 		
 		cachedPageSize = new Dimension();
 		
@@ -106,9 +120,8 @@ public class ImageModel {
 		subClip = null;
 		
 		renderQueue = new PriorityBlockingQueue();
-		
-		renderThread = new Thread(new RenderThread(renderQueue), "ImagePanel Picasso");
-		renderThread.setDaemon(true);
+		renderThread = new RenderThread(renderQueue);
+		renderThread.start();
 		
 		removeSource();
 	}
@@ -149,6 +162,15 @@ public class ImageModel {
 	 * Sets the ImageSource for this ImageModel to use when retrieving images
 	 */
 	public void setSource(ImageSource source) {
+		try {
+			if (!renderThread.isInterrupted()) {
+				renderThread.interrupt();
+			}
+			renderThread.join();
+		} catch (InterruptedException ie) {
+			return;
+		}
+		
 		// out with the old
 		if (this.source != null) {
 			this.source.dispose();
@@ -160,9 +182,9 @@ public class ImageModel {
 		this.page = 0;
 		
 		updateTransform();
-		if (!renderThread.isAlive()) {
-			renderThread.start();
-		}
+		
+		renderThread = new RenderThread(renderQueue);
+		renderThread.start();
 	}
 	
 	
@@ -239,6 +261,18 @@ public class ImageModel {
 	public int getFitMode() {
 		return fitMode;
 	}
+	
+	
+	public void setPreserveAspectRatio(boolean b) {
+		this.preserveAspect = b;
+		updateTransform();
+		prefsNode.putBoolean("FitPreserveAspect", b);
+	}
+	
+	public boolean getPreserveAspectRatio() {
+		return preserveAspect;
+	}
+	
 	
 	/**
 	 * Retrieves the current clip bounds if we in sub-clip mode.
@@ -523,36 +557,51 @@ public class ImageModel {
 		return image;
 	}
 	
+	private void updateTransform() {
+		updateTransform(true);
+	}
+	
 	
 	/**
 	 * Updates the current image rotation / scale transform.
 	 */
-	private void updateTransform() {
+	private void updateTransform(boolean forceRepaint) {
 		BufferedImage img = preRender(source.getImage(page));
 		
-		
-		if (rotation == 0 || rotation == 180) {
-			if ((fitMode & FIT_WIDTH) == FIT_WIDTH) {
-				scalex = (float)(fitSize.width) / img.getWidth();
+		if (img != null) {
+			if (rotation == 0 || rotation == 180) {
+				if ((fitMode & FIT_WIDTH) == FIT_WIDTH) {
+					scalex = (float)(fitSize.width) / img.getWidth();
+				}
+				if ((fitMode & FIT_HEIGHT) == FIT_HEIGHT) {
+					scaley = (float)(fitSize.height) / img.getHeight();
+				}
+			} else {
+				if ((fitMode & FIT_WIDTH) == FIT_WIDTH) {
+					scaley = (float)(fitSize.width) / img.getHeight();
+				}
+				if ((fitMode & FIT_HEIGHT) == FIT_HEIGHT) {
+					scalex = (float)(fitSize.height) / img.getWidth();
+				}
 			}
-			if ((fitMode & FIT_HEIGHT) == FIT_HEIGHT) {
-				scaley = (float)(fitSize.height) / img.getHeight();
-			}
-		} else {
-			if ((fitMode & FIT_WIDTH) == FIT_WIDTH) {
-				scaley = (float)(fitSize.width) / img.getHeight();
-			}
-			if ((fitMode & FIT_HEIGHT) == FIT_HEIGHT) {
-				scalex = (float)(fitSize.height) / img.getWidth();
+			
+			// Preserve the aspect ratio...
+			if (preserveAspect) {
+				if (scalex < scaley) {
+					scaley = scalex;
+				} else if (scaley < scalex) {
+					scalex = scaley;
+				}
 			}
 		}
 		
-		
 		updateTransform(img);
 		
-		queueRender();
-		
-		fireEvent(new ImageEvent(this, ImageEvent.IMAGE_RESIZE, page));
+		if (forceRepaint) {
+			queueRender();
+			
+			fireEvent(new ImageEvent(this, ImageEvent.IMAGE_RESIZE, page));
+		}
 	}
 	
 	
@@ -605,10 +654,15 @@ public class ImageModel {
 	}
 	
 	
+	private void updateRescale() {
+		updateRescale(true);
+	}
+	
+	
 	/**
 	 * Updates the rescale operation based upon the current state.
 	 */
-	private void updateRescale() {
+	private void updateRescale(boolean forceRepaint) {
 		// Find the means of all color bands in the image.
 		if (brightness != 0f || contrast != 1.0f) {
 			int numBands = image.getRaster().getNumBands();
@@ -626,7 +680,41 @@ public class ImageModel {
 			rescaleOp = null;
 		}
 		
-		queueRender();
+		if (forceRepaint) {
+			queueRender();
+		}
+	}
+	
+	
+	public void setPrintIndexOffset(int offset) {
+		printIndexOffset = offset;
+	}
+	
+	public void setPrintHeader(String s) {
+		printHeader = s;
+	}
+	
+	/**
+	 * Implements Printable.
+	 */
+	public int print(Graphics g, PageFormat pageFormat, int pageIndex) {
+		pageIndex += printIndexOffset;
+		if (pageIndex < source.getImageCount()) {
+			BufferedImage prtImage = source.getImage(pageIndex);
+			
+			java.awt.Graphics2D g2d = (java.awt.Graphics2D)g;
+			Rectangle printClip = g2d.getClipBounds();
+			
+			g2d.drawImage(prtImage,
+					printClip.x,
+					printClip.y,
+					printClip.width,
+					printClip.height,
+					null);
+			g2d.drawString(printHeader, printClip.x, printClip.y + g2d.getFont().getSize());
+			return Printable.PAGE_EXISTS;
+		}
+		return Printable.NO_SUCH_PAGE;
 	}
 	
 	
@@ -639,11 +727,22 @@ public class ImageModel {
 	
 	
 	/**
+	 * Stops the render-thread.
+	 */
+	public void haltRender() {
+		renderThread.interrupt();
+	}
+	
+	/**
 	 * Immediately re-render and fire an event when done. This is a blocking
 	 * operation, and should -not- be executed in the AWT Event thread.
 	 */
 	public void render() {
 		BufferedImage processedImage = preRender(source.getImage(page));
+		
+		if (processedImage == null) {
+			return;
+		}
 		
 		/* Sub-Clip Processing */
 		if (subClip != null) {
@@ -703,8 +802,10 @@ public class ImageModel {
 				height = processedImage.getHeight() - y;
 			}
 			
-			
-			processedImage = processedImage.getSubimage(x, y, width, height);
+			try {
+				processedImage = processedImage.getSubimage(x, y, width, height);
+			} catch (java.awt.image.RasterFormatException ex) {
+			}
 			
 			// Update the rotation
 			updateTransform(processedImage);
@@ -748,6 +849,10 @@ public class ImageModel {
 		if (renderQueue.size() == 0) {
 			fireEvent(new ImageEvent(this, ImageEvent.IMAGE_INVALID, page));
 		}
+	}
+	
+	
+	public void preferenceChange(PreferenceChangeEvent pce) {
 	}
 	
 	
@@ -816,16 +921,19 @@ public class ImageModel {
 	/**
 	 * Executes the render method asynchronouously.
 	 */
-	private class RenderThread implements Runnable {
+	private class RenderThread extends Thread {
 		BlockingQueue queue;
 		
 		public RenderThread(BlockingQueue queue) {
+			super("ImagePanel Picasso");
+			this.setDaemon(true);
+			
 			this.queue = queue;
 		}
 		
 		public void run() {
-			while(true) {
-				try {
+			try {
+				while(true) {
 					Long headTime = (Long)queue.take();
 					
 					// Wiat up to 10 ms for another entry.
@@ -837,11 +945,15 @@ public class ImageModel {
 						headTime = (Long)queue.poll();
 					}
 					
-					render();
-				} catch (Exception ex) {
-				} catch (OutOfMemoryError oome) {
-					System.gc();
+					try {
+						render();
+					} catch (OutOfMemoryError oome) {
+						System.gc();
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 				}
+			} catch (InterruptedException ie) {
 			}
 		}
 	}

@@ -73,7 +73,9 @@ public class ImageIOSource extends DefaultThumbnailSource {
 	}
 	
 	public void dispose() {
-		image.flush();
-		image = null;
+		if (image != null) {
+			image.flush();
+			image = null;
+		}
 	}
 }

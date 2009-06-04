@@ -14,6 +14,7 @@ import java.awt.RenderingHints;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A CompositeSource allows for layering of discrete ImageSources into a 
@@ -64,6 +65,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 		lastComp = null;
 	}
 	
+	
 	/**
 	 * Creates a new CompositeSource with a specified ImageSource as the bottom
 	 * layer (a.k.a. The destination for all compositing)
@@ -77,6 +79,60 @@ public class CompositeSource extends DefaultThumbnailSource {
 	
 	
 	/**
+	 * Creates a new CompositeSource with a specified ImageSource as the bottom
+	 * layer (a.k.a. The destination for all compositing)
+	 * 
+	 * @param bottom The lowest level in the composite stack.
+	 * @param mode The mode used to composite the ImageSource.
+	 */
+	public CompositeSource(ImageSource bottom, Composite mode) {
+		this();
+		addLayer(bottom, mode);
+	}
+	
+	
+	/**
+	 * Creates a new CompositeSource with a specified ImageSource as the bottom
+	 * layer (a.k.a. The destination for all compositing)
+	 * 
+	 * @param bottom The lowest level in the composite stack.
+	 * @param visible Weather or not the specified layer is visible.
+	 */
+	public CompositeSource(ImageSource bottom, boolean visible) {
+		this();
+		addLayer(bottom, visible);
+	}
+	
+	
+	/**
+	 * Creates a new CompositeSource with a specified ImageSource as the bottom
+	 * layer (a.k.a. The destination for all compositing)
+	 * 
+	 * @param bottom The lowest level in the composite stack.
+	 * @param mode The mode used to composite the ImageSource.
+	 * @param visible Weather or not the specified layer is visible.
+	 */
+	public CompositeSource(ImageSource bottom, Composite mode, boolean visible) {
+		this();
+		addLayer(bottom, mode, visible);
+	}
+	
+	
+	/**
+	 * Adds the given ImageSource as the top layer, using the specified 
+	 * Composite object to render.
+	 *
+	 * @param layer The ImageSource to add.
+	 * @param mode The Composite to use when rendering
+	 * @param visible If true, the layers visibility is enabled.
+	 */
+	public void addLayer(ImageSource layer, Composite mode, boolean visible) {
+		layers.add(new Compositable(layer, mode, visible));
+		lastPage = -1;
+	}
+	
+	
+	/**
 	 * Adds the given ImageSource as the top layer, using the specified 
 	 * Composite object to render.
 	 *
@@ -84,9 +140,19 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param mode The Composite to use when rendering
 	 */
 	public void addLayer(ImageSource layer, Composite mode) {
-		layers.add(new Compositable(layer, mode));
+		addLayer(layer, mode, true);
 	}
 	
+	
+	/**
+	 * Adds the given ImageSource as the top layer, using AlphaComposite.SrcOver.
+	 *
+	 * @param layer The ImageSource to add.
+	 * @param visible If true, the layers visibility is enabled.
+	 */
+	public void addLayer(ImageSource layer, boolean visible) {
+		addLayer(layer, AlphaComposite.SrcOver, visible);
+	}
 	
 	/**
 	 * Adds the given ImageSource as the top layer, using a SRC_OVER
@@ -96,7 +162,6 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 */
 	public void addLayer(ImageSource layer) {
 		this.addLayer(layer, AlphaComposite.SrcOver);
-		lastPage = -1;
 	}
 	
 	
@@ -154,7 +219,14 @@ public class CompositeSource extends DefaultThumbnailSource {
 				flushComposition();
 				
 				for (Compositable c : layers) {
-					if (c.enabled) {
+					boolean compositeLayer = c.enabled;
+					
+					if (compositeLayer && c.enabledPages != null) {
+						Arrays.sort(c.enabledPages);
+						compositeLayer = Arrays.binarySearch(c.enabledPages, index) >= 0;
+					}
+						
+					if (compositeLayer) {
 						BufferedImage src = c.source.getImage(index);
 						
 						// Calculate the transform, then pass that along
@@ -269,15 +341,17 @@ public class CompositeSource extends DefaultThumbnailSource {
 		return layers.get(0).source.getImageName();
 	}
 	
-	protected static class Compositable {
+	public static class Compositable {
 		public Composite mode;
 		public ImageSource source;
 		public Boolean enabled;
+		public int[] enabledPages;
 		
-		Compositable(ImageSource source, Composite mode) {
+		Compositable(ImageSource source, Composite mode, boolean visible) {
 			this.mode = mode;
 			this.source = source;
-			this.enabled = true;
+			this.enabled = visible;
+			this.enabledPages = null;
 		}
 	}
 }
