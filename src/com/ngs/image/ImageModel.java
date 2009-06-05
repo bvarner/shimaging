@@ -93,7 +93,7 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 		
 		scalex = prefsNode.getFloat("DefaultScaleX", 1.0f);
 		scaley = prefsNode.getFloat("DefaultScaleY", 1.0f);
-		fitSize = null;
+		fitSize = new Dimension();
 		fitMode = prefsNode.getInt("DefaultFitMode", FIT_NONE);
 		oldScalex = scalex;
 		oldScaley = scaley;
@@ -239,7 +239,7 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 	 */
 	public void setFitMode(Rectangle rect, int fitMode) {
 		if (rect == null || fitMode == FIT_NONE) {
-			fitSize = null;
+			fitSize = new Dimension();
 			scalex = oldScalex;
 			scaley = oldScaley;
 		} else {
@@ -703,14 +703,16 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 			BufferedImage prtImage = source.getImage(pageIndex);
 			
 			java.awt.Graphics2D g2d = (java.awt.Graphics2D)g;
+			g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 			Rectangle printClip = g2d.getClipBounds();
 			
 			g2d.drawImage(prtImage,
-					printClip.x,
-					printClip.y,
-					printClip.width,
-					printClip.height,
+					(int)pageFormat.getImageableX(),
+					(int)pageFormat.getImageableY(),
+					(int)pageFormat.getImageableWidth(),
+					(int)pageFormat.getImageableHeight(),
 					null);
+			
 			g2d.drawString(printHeader, printClip.x, printClip.y + g2d.getFont().getSize());
 			return Printable.PAGE_EXISTS;
 		}
