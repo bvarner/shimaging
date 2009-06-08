@@ -703,16 +703,16 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 			BufferedImage prtImage = source.getImage(pageIndex);
 			
 			java.awt.Graphics2D g2d = (java.awt.Graphics2D)g;
-			g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-			Rectangle printClip = g2d.getClipBounds();
 			
-			g2d.drawImage(prtImage,
-					(int)pageFormat.getImageableX(),
-					(int)pageFormat.getImageableY(),
+			// Because we translate, we can draw from 0, 0 to 
+			// the imageableWidth(), imageableHeight().
+			g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+			g2d.drawImage(prtImage, 0, 0,
 					(int)pageFormat.getImageableWidth(),
 					(int)pageFormat.getImageableHeight(),
 					null);
 			
+			Rectangle printClip = g2d.getClipBounds();
 			g2d.drawString(printHeader, printClip.x, printClip.y + g2d.getFont().getSize());
 			return Printable.PAGE_EXISTS;
 		}
