@@ -415,8 +415,11 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 			btnOut.setEnabled(mdlImage.getImage() != null && mdlImage.getScale() > 0.125);
 			
 			btnFit.setEnabled(mdlImage.getImage() != null);
+			btnFit.setSelected(mdlImage.getFitMode() == mdlImage.FIT_BOTH);
 			btnFitWidth.setEnabled(mdlImage.getImage() != null);
+			btnFitWidth.setSelected(mdlImage.getFitMode() == mdlImage.FIT_WIDTH);
 			btnFitHeight.setEnabled(mdlImage.getImage() != null);
+			btnFitHeight.setSelected(mdlImage.getFitMode() == mdlImage.FIT_HEIGHT);
 			
 			btnLighten.setEnabled(mdlImage.getImage() != null);
 			btnDarken.setEnabled(mdlImage.getImage() != null);
@@ -438,12 +441,17 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 			rotateClockwise.setEnabled(mdlImage.getImage() != null);
 			rotateCounterClockwise.setEnabled(mdlImage.getImage() != null);
 			fitWindow.setEnabled(mdlImage.getImage() != null);
+			fitWindow.setSelected(mdlImage.getFitMode() == mdlImage.FIT_BOTH);
 			fitWidth.setEnabled(mdlImage.getImage() != null);
+			fitWidth.setSelected(mdlImage.getFitMode() == mdlImage.FIT_WIDTH);
 			fitHeight.setEnabled(mdlImage.getImage() != null);
+			fitHeight.setSelected(mdlImage.getFitMode() == mdlImage.FIT_HEIGHT);
 			preserveAspect.setEnabled(mdlImage.getImage() != null);
+			preserveAspect.setSelected(mdlImage.getPreserveAspectRatio());
 			
 			updateMenus();
 		} else {
+			System.out.println("Model NULL");
 			btnNext.setEnabled(false);
 			btnPrev.setEnabled(false);
 			btnIn.setEnabled(false);
