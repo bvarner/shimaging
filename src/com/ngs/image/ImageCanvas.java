@@ -40,6 +40,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 		super();
 		this.model = null;
 		imageSize = null;
+		
 		viewRect = new Rectangle();
 		
 		allowSubClip = true;
@@ -169,45 +170,15 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	
 	
 	/**
-	 * Used to translate the given Rectangle (in source image coordinates) 
-	 * to the current ImageModel's transform.
-	 */
-	private Rectangle translateSourceRect(Rectangle rect) {
-		if (model != null && model.getImage() != null) {
-			//System.out.println("   Performing Rect Translation.");
-			
-			// Translate the starting point.
-			Point2D start = model.getTransform().transform(rect.getLocation(), null);
-			//System.out.println("   X Start Point: " + start);
-			
-			
-			// Create the end point based on the start offset by the source
-			// width & height
-			Point end = new Point(rect.getLocation());
-			end.translate(rect.width, rect.height);
-			//System.out.println("   O End Point: " + end);
-			
-			// Translate the end point
-			Point2D extent = model.getTransform().transform(end, null);
-			//System.out.println("   X Extent Point: " + extent);
-			
-			rect = new Rectangle((int)start.getX(), (int)start.getY(),
-			                     (int)(extent.getX() - start.getX()), 
-			                     (int)(extent.getY() - start.getY()));
-			//System.out.println("   X Rect: " + rect);
-		}
-		return rect;
-	}
-	
-	
-	/**
 	 * Overrides the default scrollRectToVisible from JComponent.
 	 * We first apply the active transform from the imageModel (if any) and
 	 * pass the resulting Rect to the super-classes implementation.
 	 */
 	public void scrollRectToVisible(Rectangle rect) {
-		Rectangle r = translateSourceRect(rect);
-		super.scrollRectToVisible(r);
+		if (model!= null && model.getImage() != null) {
+			rect = model.getTransform().createTransformedShape(rect).getBounds();
+		}
+		super.scrollRectToVisible(rect);
 	}
 	
 	/**
