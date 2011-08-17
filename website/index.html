@@ -31,6 +31,28 @@
 				<li>Rotation 90 degrees counter &amp; clockwise</li>
 			</ul>
 		</p>
+
+		<h2>News:</h2>
+		<p>After a long hiatus from the project, I revisted some things this 
+		evening in trunk, and will be prepping a 0.9.5 release soon.
+			<ul>
+				<li>Package rename, slight restructure. com.ngs was 
+				    renamed com.shimaging, and the 'image' package was 
+				    dropped.
+				</li>
+				<li>Method parameters which are not updated as output 
+				    parameters are now marked final.
+				</li>
+				<li>Switched the render locking to use a Semaphore for 
+				    signaling.
+				</li>
+				<li>Cleaned up imports, made the TestApp not load an 
+				    image by default, and renamed the existing TestApp 
+				    that loaded JAI TIFFs as a composite source into a 
+				    different class.
+				<li>
+			</ul>
+		</p>
 		
 		<h2>Screenshots:</h2>
 		<a href="shimaging_shot_01.png"><img src="shimaging_thumb_01.png" border="0"></a> &nbsp;&nbsp;&nbsp;&nbsp;
