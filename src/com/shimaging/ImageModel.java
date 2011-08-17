@@ -59,9 +59,8 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	
 	AffineTransformOp transformOp;
 	RescaleOp rescaleOp;
-	
-	LookupOp lookupOp;
-	short[] invertTable;
+
+	RescaleOp invertOp;
 	
 	ArrayList<ImageEventListener> listeners;
 	
@@ -105,12 +104,8 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		cachedPageSize = new Dimension();
 		
 		rescaleOp = null;
-		
-		invertTable = new short[256];
-		for (int i = 0; i < 256; i++) {
-			invertTable[i] = (short) (255 - i);
-		}
-		lookupOp = new LookupOp(new ShortLookupTable(0, invertTable), null);
+
+		invertOp = new RescaleOp(-1.0f, 255f, null);
 		
 		subClip = null;
 		
@@ -831,7 +826,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		/* Handle inversion!
 		 */
 		if (invert) {
-			processedImage = lookupOp.filter(processedImage, processedImage);
+			processedImage = invertOp.filter(processedImage, processedImage);
 		}
 		
 		
