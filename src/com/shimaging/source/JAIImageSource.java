@@ -1,4 +1,4 @@
-package com.shimaging.image.source;
+package com.shimaging.source;
 
 
 import java.awt.image.BufferedImage;

@@ -1,4 +1,4 @@
-package com.shimaging.image;
+package com.shimaging;
 
 /** 
  * Interface that objects interested in receiving Image-level events should

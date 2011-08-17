@@ -1,6 +1,6 @@
-package com.shimaging.image.source;
+package com.shimaging.source;
 
-import com.shimaging.image.ImageSource;
+import com.shimaging.ImageSource;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;

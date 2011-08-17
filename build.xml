@@ -107,7 +107,7 @@
 			</classpath>
 		</nbprofiledirect>
 		
-		<java classname="com.shimaging.image.TestApp" fork="true" maxmemory="128m">
+		<java classname="com.shimaging.TestApp" fork="true" maxmemory="128m">
 			<jvmarg value="${profiler.info.jvmargs.agent}"/>
 			<classpath>
 				<path refid="jai.path"/>

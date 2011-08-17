@@ -1,4 +1,4 @@
-package com.shimaging.image;
+package com.shimaging;
 
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
