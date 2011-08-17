@@ -1,4 +1,4 @@
-package com.ngs.image.source;
+package com.shimaging.image.source;
 
 import java.io.File;
 import java.io.InputStream;

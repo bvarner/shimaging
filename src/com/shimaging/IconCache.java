@@ -1,4 +1,4 @@
-package com.ngs;
+package com.shimaging;
 
 import java.util.HashMap;
 import javax.swing.ImageIcon;

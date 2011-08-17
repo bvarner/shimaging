@@ -1,4 +1,4 @@
-package com.ngs.image;
+package com.shimaging.image;
 
 import java.awt.*;
 import java.awt.Rectangle;
@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.awt.print.*;
 import java.awt.AlphaComposite;
 
-import com.ngs.image.source.*;
+import com.shimaging.image.source.*;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;

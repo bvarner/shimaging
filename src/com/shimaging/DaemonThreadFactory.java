@@ -1,4 +1,4 @@
-package com.ngs;
+package com.shimaging;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;

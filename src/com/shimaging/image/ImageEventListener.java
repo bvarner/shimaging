@@ -1,4 +1,4 @@
-package com.ngs.image;
+package com.shimaging.image;
 
 /** 
  * Interface that objects interested in receiving Image-level events should

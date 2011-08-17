@@ -1,4 +1,4 @@
-package com.ngs.image.filter;
+package com.shimaging.image.filter;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;

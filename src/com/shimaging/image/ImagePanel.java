@@ -1,6 +1,6 @@
-package com.ngs.image;
+package com.shimaging.image;
 
-import com.ngs.IconCache;
+import com.shimaging.IconCache;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;

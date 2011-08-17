@@ -1,6 +1,6 @@
-package com.ngs.image.source;
+package com.shimaging.image.source;
 
-import com.ngs.image.ImageSource;
+import com.shimaging.image.ImageSource;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;

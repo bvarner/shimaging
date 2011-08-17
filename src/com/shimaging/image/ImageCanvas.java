@@ -1,4 +1,4 @@
-package com.ngs.image;
+package com.shimaging.image;
 
 import java.awt.Color;
 import java.awt.Dimension;

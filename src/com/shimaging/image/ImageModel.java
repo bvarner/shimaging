@@ -1,6 +1,6 @@
-package com.ngs.image;
+package com.shimaging.image;
 
-import com.ngs.DaemonThreadFactory;
+import com.shimaging.DaemonThreadFactory;
 
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -22,7 +22,7 @@ import java.awt.print.PageFormat;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 
-import com.ngs.image.filter.BrightnessContrastOp;
+import com.shimaging.image.filter.BrightnessContrastOp;
 
 import java.util.prefs.*;
 
