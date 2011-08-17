@@ -116,7 +116,7 @@ public class TestApp extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		CompositeJAITIFFTestApp ta = new CompositeJAITIFFTestApp();
+		TestApp ta = new TestApp();
 		ta.show();
 	}
 
