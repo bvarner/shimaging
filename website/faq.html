@@ -27,7 +27,7 @@
 		BufferedImage bufImage = new BufferedImage(foo.getWidth(this), foo.getHeight(this), BufferedImage.TYPE_INT_ARGB);
 		Graphics g = bufImage.getGraphics();
 		g.drawImage(foo, new AffineTransform(), this);
-		d.dispose();
+		g.dispose();
 		
 		return bufImage;
 	}
