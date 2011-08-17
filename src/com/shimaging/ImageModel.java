@@ -1,14 +1,10 @@
 package com.shimaging;
 
 import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.LookupOp;
 import java.awt.image.RescaleOp;
-import java.awt.image.ShortLookupTable;
 import java.awt.geom.AffineTransform;
 
 import java.awt.Graphics;
@@ -17,6 +13,8 @@ import java.awt.print.PageFormat;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.image.IndexColorModel;
+import java.util.concurrent.Semaphore;
 
 
 import java.util.prefs.*;
@@ -63,9 +61,8 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	RescaleOp invertOp;
 	
 	ArrayList<ImageEventListener> listeners;
-	
-	PriorityBlockingQueue renderQueue;
-	Thread renderThread;
+
+	private final RenderThread renderThread = new RenderThread();
 	
 	int printIndexOffset = 0;
 	String printHeader = "";
@@ -109,9 +106,6 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		
 		subClip = null;
 		
-		renderQueue = new PriorityBlockingQueue();
-		renderThread = null;
-		
 		removeSource();
 	}
 	
@@ -151,17 +145,6 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Sets the ImageSource for this ImageModel to use when retrieving images
 	 */
 	public void setSource(final ImageSource source) {
-		if (renderThread != null) {
-			try {
-				if (!renderThread.isInterrupted()) {
-					renderThread.interrupt();
-				}
-				renderThread.join();
-			} catch (InterruptedException ie) {
-				return;
-			}
-		}
-		
 		// out with the old
 		if (this.source != null) {
 			this.source.dispose();
@@ -171,11 +154,12 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		this.source = source;
 		
 		this.page = 0;
-		
+
+		if (!renderThread.isAlive()) {
+			renderThread.start();
+		}
+
 		updateTransform();
-		
-		renderThread = new RenderThread(renderQueue);
-		renderThread.start();
 	}
 	
 	
@@ -715,7 +699,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Places a new entry into the render Queue.
 	 */
 	public void queueRender() {
-		renderQueue.offer(Long.valueOf(System.currentTimeMillis()));
+		renderThread.getSemaphore().release();
 	}
 	
 	
@@ -805,27 +789,38 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		}
 		
 		
-		/* If we do any transforming, do it here.
-		 * Note that this also executes for rescaling. The transformOp 
-		 * creates a non-IndexColorModel compatible image, which allows us to
-		 * rescale the resultant image.
-		 *
-		 * TODO: It would probably be better to interrogate the ColorModel of the 
-		 * image, and only filter for rescale if we're using an IndexColorModel.
-		 */
-		if (rescaleOp != null || !transformOp.getTransform().isIdentity()) {
+		// If we do any transforming, do it here.
+		if (!transformOp.getTransform().isIdentity()) {
 			processedImage = transformOp.filter(processedImage, null);
 		}
-		
+
 		/* Handle any Rescaling.
 		 */
 		if (rescaleOp != null) {
+			/*
+			 * RescaleOp only works on non-IndexColorModels. So if an image has
+			 * an IndexColorModel and will be color-shifted or inverted, we need
+			 * to run it through the identity transform to create a non-IndexColorModel
+			 */
+			if (processedImage.getColorModel() instanceof IndexColorModel) {
+				processedImage = new AffineTransformOp(new AffineTransform(), null).filter(processedImage, processedImage);
+			}
+
 			processedImage = rescaleOp.filter(processedImage, processedImage);
 		}
 		
 		/* Handle inversion!
 		 */
 		if (invert) {
+			/*
+			 * RescaleOp only works on non-IndexColorModels. So if an image has
+			 * an IndexColorModel and will be color-shifted or inverted, we need
+			 * to run it through the identity transform to create a non-IndexColorModel
+			 */
+			if (processedImage.getColorModel() instanceof IndexColorModel) {
+				processedImage = new AffineTransformOp(new AffineTransform(), null).filter(processedImage, processedImage);
+			}
+			
 			processedImage = invertOp.filter(processedImage, processedImage);
 		}
 		
@@ -839,7 +834,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		image = extendRender(processedImage);
 		
 		// Fire an INVALID if there are no additional Renders pending.
-		if (renderQueue.size() == 0) {
+		if (renderThread.getSemaphore().availablePermits() <= 0) {
 			fireEvent(new ImageEvent(this, ImageEvent.IMAGE_INVALID, page));
 		}
 	}
@@ -915,30 +910,25 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Executes the render method asynchronously.
 	 */
 	private class RenderThread extends Thread {
-		BlockingQueue queue;
-		
-		public RenderThread(BlockingQueue queue) {
+		private Semaphore semaphore;
+
+		public RenderThread() {
 			super("ImagePanel Picasso");
 			this.setDaemon(true);
-			
-			this.queue = queue;
+			this.semaphore = new Semaphore(1);
+		}
+
+		public Semaphore getSemaphore() {
+			return this.semaphore;
 		}
 		
 		@Override
 		public void run() {
 			try {
 				while(true) {
-					Long headTime = (Long)queue.take();
-					
-					// Wiat up to 10 ms for another entry.
-					if (queue.peek() != null) {
-						Thread.sleep(10);
-					}
-					
-					while (queue.peek() != null) {
-						headTime = (Long)queue.poll();
-					}
-					
+					semaphore.acquire();
+					semaphore.drainPermits();
+
 					try {
 						render();
 					} catch (OutOfMemoryError oome) {
