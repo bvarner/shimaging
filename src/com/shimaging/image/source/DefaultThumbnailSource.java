@@ -4,8 +4,6 @@ import com.shimaging.image.ImageSource;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
 
 
 /**

@@ -1,6 +1,5 @@
 package com.shimaging.image.source;
 
-import com.shimaging.image.ImageSource;
 import java.awt.image.BufferedImage;
 
 /**

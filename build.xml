@@ -51,13 +51,13 @@
 		<jar file="${project.name}.jar">
 			<fileset dir="classes"/>
 			<manifest>
-				<attribute name="Main-Class" value="com.ngs.image.TestApp"/>
+				<attribute name="Main-Class" value="com.shimaging.TestApp"/>
 			</manifest>
 		</jar>
 	</target>
 	
 	<target name="run" depends="package" description="Runs the TestApp">
-		<java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
+		<java classname="com.shimaging.TestApp" fork="true" maxmemory="128m">
                <classpath>
 				<path refid="jai.path"/>
 				<filelist dir="." files="${project.name}.jar"/>
@@ -66,7 +66,7 @@
 	</target>
         
 	<target name="debug" depends="package" description="Runs the TestApp with dt_socket listening at port 8000">
-		<java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
+		<java classname="com.shimaging.TestApp" fork="true" maxmemory="128m">
 			<classpath>
 				<path refid="jai.path"/>
 				<filelist dir="." files="${project.name}.jar"/>
@@ -107,7 +107,7 @@
 			</classpath>
 		</nbprofiledirect>
 		
-		<java classname="com.ngs.image.TestApp" fork="true" maxmemory="128m">
+		<java classname="com.shimaging.image.TestApp" fork="true" maxmemory="128m">
 			<jvmarg value="${profiler.info.jvmargs.agent}"/>
 			<classpath>
 				<path refid="jai.path"/>

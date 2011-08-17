@@ -3,10 +3,7 @@ package com.shimaging.image.source;
 import com.shimaging.image.ImageSource;
 
 import java.awt.geom.AffineTransform;
-import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.image.IndexColorModel;
 import java.awt.Composite;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
@@ -126,7 +123,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param mode The Composite to use when rendering
 	 * @param visible If true, the layers visibility is enabled.
 	 */
-	public void addLayer(ImageSource layer, Composite mode, boolean visible) {
+	public final void addLayer(ImageSource layer, Composite mode, boolean visible) {
 		layers.add(new Compositable(layer, mode, visible));
 		lastPage = -1;
 	}
@@ -139,7 +136,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param layer The ImageSource to add.
 	 * @param mode The Composite to use when rendering
 	 */
-	public void addLayer(ImageSource layer, Composite mode) {
+	public final void addLayer(ImageSource layer, Composite mode) {
 		addLayer(layer, mode, true);
 	}
 	
@@ -150,7 +147,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param layer The ImageSource to add.
 	 * @param visible If true, the layers visibility is enabled.
 	 */
-	public void addLayer(ImageSource layer, boolean visible) {
+	public final void addLayer(ImageSource layer, boolean visible) {
 		addLayer(layer, AlphaComposite.SrcOver, visible);
 	}
 	
@@ -160,7 +157,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 *
 	 * @param layer The IMageSource to add
 	 */
-	public void addLayer(ImageSource layer) {
+	public final void addLayer(ImageSource layer) {
 		this.addLayer(layer, AlphaComposite.SrcOver);
 	}
 	

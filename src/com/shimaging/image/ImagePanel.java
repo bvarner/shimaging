@@ -1,24 +1,13 @@
 package com.shimaging.image;
 
-import com.shimaging.IconCache;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-
-import java.io.File;
-import java.io.IOException;
 
 import java.util.ArrayList;
 
@@ -39,7 +28,7 @@ import javax.swing.JOptionPane;
  * 
  * @author Bryan.Varner
  */
-public class ImagePanel extends JPanel implements ImageEventListener, ActionListener {
+public final class ImagePanel extends JPanel implements ImageEventListener {
 	public static final int SCROLL_BLOCK = 0;
 	public static final int SCROLL_UNIT = 1;
 	public static final int SCROLL_MAX = 2;
@@ -90,7 +79,7 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 	
 	
 	protected ImageCanvas canvas;
-	
+
 	public ImagePanel() {
 		super(new BorderLayout());
 		
@@ -101,8 +90,8 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 		canvas = createImageCanvas();
 		
 		scrollPane = new JScrollPane();
-		scrollPane.setHorizontalScrollBarPolicy(scrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scrollPane.setVerticalScrollBarPolicy(scrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.getViewport().addChangeListener(canvas);
 		scrollPane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
 		scrollPane.setViewportView(canvas);
@@ -189,51 +178,53 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 		add(toolBar, BorderLayout.NORTH);
 		add(scrollPane, BorderLayout.CENTER);
 		
-		btnPrev.addActionListener(this);
-		btnNext.addActionListener(this);
-		btnIn.addActionListener(this);
-		btnOut.addActionListener(this);
-		btnFit.addActionListener(this);
-		btnFitWidth.addActionListener(this);
-		btnFitHeight.addActionListener(this);
-		btnLighten.addActionListener(this);
-		btnDarken.addActionListener(this);
-		btnContUp.addActionListener(this);
-		btnContDn.addActionListener(this);
-		btnInvert.addActionListener(this);
-		btnRotCW.addActionListener(this);
-		btnRotCCW.addActionListener(this);
+		ImagePanelActionListener actionListener = new ImagePanelActionListener();
+
+		btnPrev.addActionListener(actionListener);
+		btnNext.addActionListener(actionListener);
+		btnIn.addActionListener(actionListener);
+		btnOut.addActionListener(actionListener);
+		btnFit.addActionListener(actionListener);
+		btnFitWidth.addActionListener(actionListener);
+		btnFitHeight.addActionListener(actionListener);
+		btnLighten.addActionListener(actionListener);
+		btnDarken.addActionListener(actionListener);
+		btnContUp.addActionListener(actionListener);
+		btnContDn.addActionListener(actionListener);
+		btnInvert.addActionListener(actionListener);
+		btnRotCW.addActionListener(actionListener);
+		btnRotCCW.addActionListener(actionListener);
 		
 		
 		mnuImage = new JMenu("Image");
 		mnuImage.setMnemonic(KeyEvent.VK_I);
 		
 		prevPage = createMenuItem("Previous Page", KeyEvent.VK_P,
-								InputEvent.ALT_MASK, this);
+								InputEvent.ALT_MASK, actionListener);
 		nextPage = createMenuItem("Next Page", KeyEvent.VK_N,
-								InputEvent.ALT_MASK, this);
+								InputEvent.ALT_MASK, actionListener);
 		
 		mnuImage.add(prevPage);
 		mnuImage.add(nextPage);
 		mnuImage.addSeparator();
 		
 		zoomIn = createMenuItem("Zoom In", KeyEvent.VK_EQUALS, 
-		                            InputEvent.ALT_MASK, this);
+		                            InputEvent.ALT_MASK, actionListener);
 		zoomOut = createMenuItem("Zoom Out", KeyEvent.VK_MINUS,
-		                            InputEvent.ALT_MASK, this);
+		                            InputEvent.ALT_MASK, actionListener);
 		mnuImage.add(zoomIn);
 		mnuImage.add(zoomOut);
 		mnuImage.addSeparator();
 		
-		invert = createMenuItem("Invert Colors", this);
-		contrastUp = createMenuItem("More Contrast", this);
-		contrastDown = createMenuItem("Less Contrast", this);
-		lighter = createMenuItem("Brighter", this);
-		darker = createMenuItem("Darker", this);
+		invert = createMenuItem("Invert Colors", actionListener);
+		contrastUp = createMenuItem("More Contrast", actionListener);
+		contrastDown = createMenuItem("Less Contrast", actionListener);
+		lighter = createMenuItem("Brighter", actionListener);
+		darker = createMenuItem("Darker", actionListener);
 		rotateClockwise = createMenuItem("Rotate Clockwise", KeyEvent.VK_X, 
-		                             InputEvent.ALT_MASK, this);
+		                             InputEvent.ALT_MASK, actionListener);
 		rotateCounterClockwise = createMenuItem("Rotate Counter-Clockwise",
-								KeyEvent.VK_X, InputEvent.CTRL_MASK, this);
+								KeyEvent.VK_X, InputEvent.CTRL_MASK, actionListener);
 		mnuImage.add(invert);
 		mnuImage.add(contrastUp);
 		mnuImage.add(contrastDown);
@@ -243,19 +234,19 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 		mnuImage.add(rotateCounterClockwise);
 		mnuImage.addSeparator();
 		fitWidth = new JCheckBoxMenuItem("Fit To Width");
-		fitWidth.addActionListener(this);
+		fitWidth.addActionListener(actionListener);
 		mnuImage.add(fitWidth);
 		
 		fitHeight = new JCheckBoxMenuItem("Fit To Height");
-		fitHeight.addActionListener(this);
+		fitHeight.addActionListener(actionListener);
 		mnuImage.add(fitHeight);
 		
 		fitWindow = new JCheckBoxMenuItem("Fit To Window");
-		fitWindow.addActionListener(this);
+		fitWindow.addActionListener(actionListener);
 		mnuImage.add(fitWindow);
 		
 		preserveAspect = new JCheckBoxMenuItem("Preserve Aspect Ratio");
-		preserveAspect.addActionListener(this);
+		preserveAspect.addActionListener(actionListener);
 		mnuImage.add(preserveAspect);
 	}
 	
@@ -287,6 +278,7 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 	/**
 	 * Make sure that if we don't have a model, we're at least 400 pixels tall
 	 */
+	@Override
 	public Dimension getPreferredSize() {
 		Dimension d = super.getPreferredSize();
 		if (getModel() == null) {
@@ -312,98 +304,6 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 	
 	
 	/**
-	 * Implements ActionListener.
-	 * 
-	 * All the buttons / functions on the embedded Toolbar are
-	 * processed first by the ImagePanel, then dispatched to any registered 
-	 * listeners.
-	 */
-	public void actionPerformed(ActionEvent ae) {
-		if (ae.getActionCommand().equals("Previous Page")) {
-			mdlImage.prevPage();
-		} else if (ae.getActionCommand().equals("Next Page")) {
-			mdlImage.nextPage();
-		} else if (ae.getActionCommand().equals("Zoom In")) {
-			if (mdlImage.getFitMode() != mdlImage.FIT_NONE) {
-				mdlImage.setFitMode(null, mdlImage.FIT_NONE);
-			}
-			btnFit.setSelected(false);
-			btnFitWidth.setSelected(false);
-			btnFitHeight.setSelected(false);
-			mdlImage.scaleBy((2.0f / 3.0f));
-		} else if (ae.getActionCommand().equals("Zoom Out")) {
-			if (mdlImage.getFitMode() != mdlImage.FIT_NONE) {
-				mdlImage.setFitMode(null, mdlImage.FIT_NONE);
-			}
-			btnFit.setSelected(false);
-			btnFitWidth.setSelected(false);
-			btnFitHeight.setSelected(false);
-			mdlImage.scaleBy(1.5f);
-		} else if (ae.getActionCommand().equals("Preserve Aspect Ratio")) {
-			mdlImage.setPreserveAspectRatio(!mdlImage.getPreserveAspectRatio());
-			updateMenus();
-		} else if (ae.getActionCommand().equals("Fit To Window")) {
-			if (ae.getSource() == fitWindow) {
-				btnFit.setSelected(!btnFit.isSelected());
-				updateMenus();
-			}
-			
-			if (btnFit.isSelected()) {
-				btnFitWidth.setSelected(false);
-				btnFitHeight.setSelected(false);
-				mdlImage.setFitMode(scrollPane.getViewport().getViewRect(), mdlImage.FIT_BOTH);
-			} else {
-				mdlImage.setFitMode(null, mdlImage.FIT_NONE);
-			}
-		} else if (ae.getActionCommand().equals("Fit To Width")) {
-			if (ae.getSource() == fitWidth) {
-				btnFitWidth.setSelected(!btnFitWidth.isSelected());
-				updateMenus();
-			}
-			
-			if (btnFitWidth.isSelected()) {
-				btnFit.setSelected(false);
-				btnFitHeight.setSelected(false);
-				mdlImage.setFitMode(scrollPane.getViewport().getViewRect(), mdlImage.FIT_WIDTH);
-			} else {
-				mdlImage.setFitMode(null, mdlImage.FIT_NONE);
-			}
-		} else if (ae.getActionCommand().equals("Fit To Height")) {
-			if (ae.getSource() == fitHeight) {
-				btnFitHeight.setSelected(!btnFitHeight.isSelected());
-				updateMenus();
-			}
-			
-			if (btnFitHeight.isSelected()) {
-				btnFit.setSelected(false);
-				btnFitWidth.setSelected(false);
-				mdlImage.setFitMode(scrollPane.getViewport().getViewRect(), mdlImage.FIT_HEIGHT);
-			} else {
-				mdlImage.setFitMode(null, mdlImage.FIT_NONE);
-			}
-		} else if (ae.getActionCommand().equals("Brighter")) {
-			mdlImage.adjustBrightness(25);
-		} else if (ae.getActionCommand().equals("Darker")) {
-			mdlImage.adjustBrightness(-25);
-		} else if (ae.getActionCommand().equals("More Contrast")) {
-			mdlImage.adjustContrast(0.1f);
-		} else if (ae.getActionCommand().equals("Less Contrast")) {
-			mdlImage.adjustContrast(-0.1f);
-		} else if (ae.getActionCommand().equals("Invert Colors")) {
-			mdlImage.invert();
-		} else if (ae.getActionCommand().equals("Rotate Clockwise")) {
-			mdlImage.addRotation(90);
-		} else if (ae.getActionCommand().equals("Rotate Counter-Clockwise")) {
-			mdlImage.addRotation(-90);
-		}
-		
-		// Forward all events on to the registered listeners.
-		for (ActionListener al : listeners) {
-			al.actionPerformed(ae);
-		}
-	}
-	
-	/**
 	 * Updates the toolbar buttons to accurately reflect the current ImageModel
 	 * state.
 	 */
@@ -415,11 +315,11 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 			btnOut.setEnabled(mdlImage.getImage() != null && mdlImage.getScale() > 0.125);
 			
 			btnFit.setEnabled(mdlImage.getImage() != null);
-			btnFit.setSelected(mdlImage.getFitMode() == mdlImage.FIT_BOTH);
+			btnFit.setSelected(mdlImage.getFitMode() == ImageModel.FIT_BOTH);
 			btnFitWidth.setEnabled(mdlImage.getImage() != null);
-			btnFitWidth.setSelected(mdlImage.getFitMode() == mdlImage.FIT_WIDTH);
+			btnFitWidth.setSelected(mdlImage.getFitMode() == ImageModel.FIT_WIDTH);
 			btnFitHeight.setEnabled(mdlImage.getImage() != null);
-			btnFitHeight.setSelected(mdlImage.getFitMode() == mdlImage.FIT_HEIGHT);
+			btnFitHeight.setSelected(mdlImage.getFitMode() == ImageModel.FIT_HEIGHT);
 			
 			btnLighten.setEnabled(mdlImage.getImage() != null);
 			btnDarken.setEnabled(mdlImage.getImage() != null);
@@ -441,11 +341,11 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 			rotateClockwise.setEnabled(mdlImage.getImage() != null);
 			rotateCounterClockwise.setEnabled(mdlImage.getImage() != null);
 			fitWindow.setEnabled(mdlImage.getImage() != null);
-			fitWindow.setSelected(mdlImage.getFitMode() == mdlImage.FIT_BOTH);
+			fitWindow.setSelected(mdlImage.getFitMode() == ImageModel.FIT_BOTH);
 			fitWidth.setEnabled(mdlImage.getImage() != null);
-			fitWidth.setSelected(mdlImage.getFitMode() == mdlImage.FIT_WIDTH);
+			fitWidth.setSelected(mdlImage.getFitMode() == ImageModel.FIT_WIDTH);
 			fitHeight.setEnabled(mdlImage.getImage() != null);
-			fitHeight.setSelected(mdlImage.getFitMode() == mdlImage.FIT_HEIGHT);
+			fitHeight.setSelected(mdlImage.getFitMode() == ImageModel.FIT_HEIGHT);
 			preserveAspect.setEnabled(mdlImage.getImage() != null);
 			preserveAspect.setSelected(mdlImage.getPreserveAspectRatio());
 			
@@ -586,6 +486,7 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 		}
 	}
 	
+	@Override
 	public void removeNotify() {
 		super.removeNotify();
 		getModel().haltRender();
@@ -608,14 +509,6 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 	 */
 	private JMenuItem createMenuItem(String text, ActionListener listener) {
 		return createMenuItem(text, 0, 0, 0, listener);
-	}
-	
-	
-	/**
-	 * Utility method to create a menu item
-	 */
-	private JMenuItem createMenuItem(String text, int mnemonic, ActionListener listener) {
-		return createMenuItem(text, mnemonic, 0, 0, listener);
 	}
 	
 	
@@ -647,5 +540,99 @@ public class ImagePanel extends JPanel implements ImageEventListener, ActionList
 		
 		item.addActionListener(listener);
 		return item;
+	}
+
+	/**
+	 * Implements ActionListener.
+	 *
+	 * All the buttons / functions on the embedded Toolbar are
+	 * processed first by the ImagePanel, then dispatched to any registered
+	 * listeners.
+	 */
+	private class ImagePanelActionListener implements ActionListener {
+		public void actionPerformed(ActionEvent ae) {
+			if (ae.getActionCommand().equals("Previous Page")) {
+				mdlImage.prevPage();
+			} else if (ae.getActionCommand().equals("Next Page")) {
+				mdlImage.nextPage();
+			} else if (ae.getActionCommand().equals("Zoom In")) {
+				if (mdlImage.getFitMode() != ImageModel.FIT_NONE) {
+					mdlImage.setFitMode(null, ImageModel.FIT_NONE);
+				}
+				btnFit.setSelected(false);
+				btnFitWidth.setSelected(false);
+				btnFitHeight.setSelected(false);
+				mdlImage.scaleBy((2.0f / 3.0f));
+			} else if (ae.getActionCommand().equals("Zoom Out")) {
+				if (mdlImage.getFitMode() != ImageModel.FIT_NONE) {
+					mdlImage.setFitMode(null, ImageModel.FIT_NONE);
+				}
+				btnFit.setSelected(false);
+				btnFitWidth.setSelected(false);
+				btnFitHeight.setSelected(false);
+				mdlImage.scaleBy(1.5f);
+			} else if (ae.getActionCommand().equals("Preserve Aspect Ratio")) {
+				mdlImage.setPreserveAspectRatio(!mdlImage.getPreserveAspectRatio());
+				updateMenus();
+			} else if (ae.getActionCommand().equals("Fit To Window")) {
+				if (ae.getSource() == fitWindow) {
+					btnFit.setSelected(!btnFit.isSelected());
+					updateMenus();
+				}
+
+				if (btnFit.isSelected()) {
+					btnFitWidth.setSelected(false);
+					btnFitHeight.setSelected(false);
+					mdlImage.setFitMode(scrollPane.getViewport().getViewRect(), ImageModel.FIT_BOTH);
+				} else {
+					mdlImage.setFitMode(null, ImageModel.FIT_NONE);
+				}
+			} else if (ae.getActionCommand().equals("Fit To Width")) {
+				if (ae.getSource() == fitWidth) {
+					btnFitWidth.setSelected(!btnFitWidth.isSelected());
+					updateMenus();
+				}
+
+				if (btnFitWidth.isSelected()) {
+					btnFit.setSelected(false);
+					btnFitHeight.setSelected(false);
+					mdlImage.setFitMode(scrollPane.getViewport().getViewRect(), ImageModel.FIT_WIDTH);
+				} else {
+					mdlImage.setFitMode(null, ImageModel.FIT_NONE);
+				}
+			} else if (ae.getActionCommand().equals("Fit To Height")) {
+				if (ae.getSource() == fitHeight) {
+					btnFitHeight.setSelected(!btnFitHeight.isSelected());
+					updateMenus();
+				}
+
+				if (btnFitHeight.isSelected()) {
+					btnFit.setSelected(false);
+					btnFitWidth.setSelected(false);
+					mdlImage.setFitMode(scrollPane.getViewport().getViewRect(), ImageModel.FIT_HEIGHT);
+				} else {
+					mdlImage.setFitMode(null, ImageModel.FIT_NONE);
+				}
+			} else if (ae.getActionCommand().equals("Brighter")) {
+				mdlImage.adjustBrightness(25);
+			} else if (ae.getActionCommand().equals("Darker")) {
+				mdlImage.adjustBrightness(-25);
+			} else if (ae.getActionCommand().equals("More Contrast")) {
+				mdlImage.adjustContrast(0.1f);
+			} else if (ae.getActionCommand().equals("Less Contrast")) {
+				mdlImage.adjustContrast(-0.1f);
+			} else if (ae.getActionCommand().equals("Invert Colors")) {
+				mdlImage.invert();
+			} else if (ae.getActionCommand().equals("Rotate Clockwise")) {
+				mdlImage.addRotation(90);
+			} else if (ae.getActionCommand().equals("Rotate Counter-Clockwise")) {
+				mdlImage.addRotation(-90);
+			}
+
+			// Forward all events on to the registered listeners.
+			for (ActionListener al : listeners) {
+				al.actionPerformed(ae);
+			}
+		}
 	}
 }

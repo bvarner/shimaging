@@ -2,8 +2,6 @@ package com.shimaging.image;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.Graphics;
-import java.awt.Rectangle;
 
 /**
  * <p>Defines the interface by which ImageModel obtains Images.</p>

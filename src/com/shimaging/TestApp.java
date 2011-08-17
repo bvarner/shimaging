@@ -1,6 +1,8 @@
-package com.shimaging.image;
+package com.shimaging;
 
-import java.awt.*;
+import com.shimaging.image.ImageModel;
+import com.shimaging.image.ImagePanel;
+import com.shimaging.image.ImageSource;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.awt.print.*;
@@ -134,6 +136,7 @@ public class TestApp extends JFrame {
 		pack();
 	}
 	
+	@Override
 	public void show() {
 		super.show();
 	}
@@ -151,6 +154,7 @@ public class TestApp extends JFrame {
 			this.model = model;
 		}
 		
+		@Override
 		public void run() {
 			PrinterJob job = PrinterJob.getPrinterJob();
 			PageFormat printFormat = job.pageDialog(new PageFormat());

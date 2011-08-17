@@ -46,12 +46,12 @@ public class JAITiffImageSource extends JAIImageSource {
 	}
 	
 	
-	protected void open(File f) throws IOException {
+	protected final void open(File f) throws IOException {
 		open(new FileSeekableStream(f), f.getName());
 	}
 	
 	
-	protected void open(InputStream is, String name) throws IOException {
+	protected final void open(InputStream is, String name) throws IOException {
 		open(new MemoryCacheSeekableStream(is), name);
 	}
 	

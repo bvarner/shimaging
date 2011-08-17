@@ -1,15 +1,11 @@
 package com.shimaging.image;
 
-import com.shimaging.DaemonThreadFactory;
-
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-import java.awt.Image;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.LookupOp;
 import java.awt.image.RescaleOp;
 import java.awt.image.ShortLookupTable;
@@ -22,7 +18,6 @@ import java.awt.print.PageFormat;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 
-import com.shimaging.image.filter.BrightnessContrastOp;
 
 import java.util.prefs.*;
 
@@ -33,7 +28,7 @@ import java.util.prefs.*;
  *
  * @author Bryan.Varner
  */
-public class ImageModel implements Printable, PreferenceChangeListener {
+public final class ImageModel implements Printable, PreferenceChangeListener {
 	public static final int FIT_NONE = 0;
 	public static final int FIT_WIDTH = 1;
 	public static final int FIT_HEIGHT = 2;
@@ -120,8 +115,7 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 		subClip = null;
 		
 		renderQueue = new PriorityBlockingQueue();
-		renderThread = new RenderThread(renderQueue);
-		renderThread.start();
+		renderThread = null;
 		
 		removeSource();
 	}
@@ -162,13 +156,15 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 	 * Sets the ImageSource for this ImageModel to use when retrieving images
 	 */
 	public void setSource(ImageSource source) {
-		try {
-			if (!renderThread.isInterrupted()) {
-				renderThread.interrupt();
+		if (renderThread != null) {
+			try {
+				if (!renderThread.isInterrupted()) {
+					renderThread.interrupt();
+				}
+				renderThread.join();
+			} catch (InterruptedException ie) {
+				return;
 			}
-			renderThread.join();
-		} catch (InterruptedException ie) {
-			return;
 		}
 		
 		// out with the old
@@ -618,7 +614,7 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 		
 		
 		// Determine the rotation point based on the target rotation.
-		if (rotation != 0) {;
+		if (rotation != 0) {
 			double width = img.getWidth() * scalex;
 			double height = img.getHeight() * scaley;
 			
@@ -921,7 +917,7 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 	
 	
 	/**
-	 * Executes the render method asynchronouously.
+	 * Executes the render method asynchronously.
 	 */
 	private class RenderThread extends Thread {
 		BlockingQueue queue;
@@ -933,6 +929,7 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 			this.queue = queue;
 		}
 		
+		@Override
 		public void run() {
 			try {
 				while(true) {
@@ -940,7 +937,7 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 					
 					// Wiat up to 10 ms for another entry.
 					if (queue.peek() != null) {
-						Thread.currentThread().sleep(10);
+						Thread.sleep(10);
 					}
 					
 					while (queue.peek() != null) {
@@ -951,9 +948,7 @@ public class ImageModel implements Printable, PreferenceChangeListener {
 						render();
 					} catch (OutOfMemoryError oome) {
 						System.gc();
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
+					} catch (Exception ex) { }
 				}
 			} catch (InterruptedException ie) {
 			}

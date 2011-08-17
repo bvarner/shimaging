@@ -53,7 +53,7 @@ public class ScalingCompositeSource extends CompositeSource {
 	 * Sets up the default threashold (8), and requires the next 
 	 * calculateTransform to calculate the scale transform.
 	 */
-	protected void init() {
+	protected final void init() {
 		rescaleThreashold = 8;
 		oldHeight = 0;
 		oldWidth = 0;
@@ -81,6 +81,7 @@ public class ScalingCompositeSource extends CompositeSource {
 	 * Returns a scaleInstance AffineTransform to resize the src to fit the
 	 * bounds of the dst, within the rescale threashold.
 	 */
+	@Override
 	protected AffineTransform calculateTransform(BufferedImage src, BufferedImage dst) {
 		if (src != null && dst != null) {
 			if (scale == null || 

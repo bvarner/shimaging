@@ -84,6 +84,7 @@ public class ImageEvent extends AWTEvent {
 	}
 	
 	
+	@Override
 	public String toString() {
 		return "ImageEvent source[" + source + "] id[" + id + "] page[" + page + "]";
 	}

@@ -1,9 +1,9 @@
-package com.shimaging;
+package com.shimaging.image;
 
 import java.util.HashMap;
 import javax.swing.ImageIcon;
 
-public class IconCache {
+class IconCache {
 	static HashMap<String, ImageIcon> cache = new HashMap<String, ImageIcon>();
 	
 	public static ImageIcon getIcon(String name) {

@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
@@ -27,7 +25,6 @@ import javax.swing.event.ChangeListener;
 public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	protected ImageModel model;
 	
-	private Dimension imageSize;
 	/**
 	 * This is set to the size of a JViewport if one is registered to send us ChangeEvents.
 	 */
@@ -39,7 +36,6 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	public ImageCanvas() {
 		super();
 		this.model = null;
-		imageSize = null;
 		
 		viewRect = new Rectangle();
 		
@@ -149,6 +145,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	 * Returns the pageSize of the current ImageModel, or the preferredSize of
 	 * super()
 	 */
+	@Override
 	public Dimension getPreferredSize() {
 		Dimension d = null;
 		if (model != null) {
@@ -174,6 +171,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	 * We first apply the active transform from the imageModel (if any) and
 	 * pass the resulting Rect to the super-classes implementation.
 	 */
+	@Override
 	public void scrollRectToVisible(Rectangle rect) {
 		if (model!= null && model.getImage() != null) {
 			rect = model.getTransform().createTransformedShape(rect).getBounds();
@@ -184,6 +182,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	/**
 	 * Paints the current Image of the ImageModel.
 	 */
+	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		if (model != null && model.getImage() != null) {
