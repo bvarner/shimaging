@@ -14,7 +14,7 @@ import java.awt.image.BufferedImage;
  * 
  * @author Bryan Varner
  */
-public abstract class ImageSource {
+public interface ImageSource {
 	/**
 	 * Retrieve the image at the given index.
 	 * <p>If there is no image at the specified index, implementations should 
@@ -22,7 +22,7 @@ public abstract class ImageSource {
 	 * @param index The image to obtain from this ImageSource.
 	 * @return a BufferedImage.
 	 */
-	public abstract BufferedImage getImage(int index);
+	public BufferedImage getImage(final int index);
 	
 	
 	/**
@@ -32,24 +32,24 @@ public abstract class ImageSource {
 	 * @param index The image to obtain a thumbnail for from this ImageSource.
 	 * @return a BufferedImage.
 	 */
-	public abstract Image getThumbnail(int index);
+	public Image getThumbnail(final int index);
 	
 	
 	/**
 	 * Gets the number of Images in this ImageSource.
 	 * @return THe number of images in this ImageSource. Normally this will be 1.
 	 */
-	public abstract int getImageCount();
+	public int getImageCount();
 	
 	
 	/**
 	 * Gets the name of this Image
 	 */
-	public abstract String getImageName();
+	public String getImageName();
 	
 	/**
 	 * Release any cached resources. This method signals that the ImageSource 
 	 * will not be used again.
 	 */
-	public abstract void dispose();
+	public void dispose();
 }

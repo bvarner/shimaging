@@ -34,7 +34,7 @@ public class BrightnessContrastOp implements BufferedImageOp, RasterOp {
 	/**
 	 * Creates a new Brightness & Contrast Operation.
 	 */
-	public BrightnessContrastOp(RenderingHints hints) {
+	public BrightnessContrastOp(final RenderingHints hints) {
 		this(0, 1.0f, hints);
 	}
 	
@@ -42,7 +42,7 @@ public class BrightnessContrastOp implements BufferedImageOp, RasterOp {
 	 * Creates a new Brightness & Contrast Operation with the given 
 	 * brightness, contrast, and rendering hints.
 	 */
-	public BrightnessContrastOp(int brightness, float contrast, RenderingHints hints) {
+	public BrightnessContrastOp(final int brightness, final float contrast, final RenderingHints hints) {
 		this.brightness = brightness;
 		this.contrast = contrast;
 		this.hints = hints;
@@ -52,14 +52,14 @@ public class BrightnessContrastOp implements BufferedImageOp, RasterOp {
 	/**
 	 * Sets the brightness used when filtering.
 	 */
-	public void setBrightness(int brightness) {
+	public void setBrightness(final int brightness) {
 		this.brightness = brightness;
 	}
 	
 	/**
 	 * Sets the contrast used when filtering.
 	 */
-	public void setContrast(float contrast) {
+	public void setContrast(final float contrast) {
 		if (contrast > 0.0f) {
 			this.contrast = contrast;
 		}
@@ -77,20 +77,20 @@ public class BrightnessContrastOp implements BufferedImageOp, RasterOp {
 		return invert;
 	}
 	
-	public void setInvert(boolean invert) {
+	public void setInvert(final boolean invert) {
 		this.invert = invert;
 	}
 	
 	
-	public BufferedImage createCompatibleDestImage(BufferedImage src, ColorModel destCM) {
+	public BufferedImage createCompatibleDestImage(final BufferedImage src, final ColorModel destCM) {
 		BufferedImage image;
+
 		int w = src.getWidth();
 		int h = src.getHeight();
-		int transferType = DataBuffer.TYPE_BYTE;
+
 		if (destCM == null) {
 			ColorModel cm = src.getColorModel();
-			Raster raster = src.getRaster();
-			
+
 			image = new BufferedImage(cm,
 								cm.createCompatibleWritableRaster(w, h),
 								cm.isAlphaPremultiplied(),
@@ -102,24 +102,25 @@ public class BrightnessContrastOp implements BufferedImageOp, RasterOp {
 							destCM.isAlphaPremultiplied(),
 							null);
 		}
+
 		return image;
 	}
 	
 	
-	public WritableRaster createCompatibleDestRaster(Raster src) {
+	public WritableRaster createCompatibleDestRaster(final Raster src) {
 		return src.createCompatibleWritableRaster();
 	}
 	
 	
-	public Rectangle2D getBounds2D(BufferedImage src) {
+	public Rectangle2D getBounds2D(final BufferedImage src) {
 		return getBounds2D(src.getRaster());
 	}
 	
-	public Rectangle2D getBounds2D(Raster src) {
+	public Rectangle2D getBounds2D(final Raster src) {
 		return src.getBounds();
 	}
 	
-	public Point2D getPoint2D(Point2D srcPt, Point2D dstPt) {
+	public Point2D getPoint2D(final Point2D srcPt, Point2D dstPt) {
 		if (dstPt == null) {
 			dstPt = new Point2D.Float();
 		}
@@ -132,9 +133,8 @@ public class BrightnessContrastOp implements BufferedImageOp, RasterOp {
 		return hints;
 	}
 	
-	public BufferedImage filter(BufferedImage src, BufferedImage dst) {
+	public BufferedImage filter(final BufferedImage src, BufferedImage dst) {
 		ColorModel srcCM = src.getColorModel();
-		int numBands = srcCM.getNumColorComponents();
 		ColorModel dstCM;
 		if (srcCM instanceof IndexColorModel) {
 			throw new IllegalArgumentException("LookupOp cannot be "+
@@ -184,7 +184,7 @@ public class BrightnessContrastOp implements BufferedImageOp, RasterOp {
 		return origDst;
 	}
 	
-	public WritableRaster filter(Raster src, WritableRaster dst) {
+	public WritableRaster filter(final Raster src, WritableRaster dst) {
 		int numBands  = src.getNumBands();
 		int dstLength = dst.getNumBands();
 		int height    = src.getHeight();
@@ -282,7 +282,7 @@ public class BrightnessContrastOp implements BufferedImageOp, RasterOp {
 	/**
 	 * Limits byte values to between 255 and 0
 	 */
-	private int clamp(float v) {
+	private int clamp(final float v) {
 		if (v > 255) {
 			return (int)255;
 		} else if (v < 0) {

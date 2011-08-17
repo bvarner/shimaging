@@ -19,7 +19,7 @@ public class ImageEvent extends AWTEvent {
 	 * @param page The page which the event type referrs to
 	 * @param message The Message to go along with the event.
 	 */
-	public ImageEvent(Object source, int ID, int page, String message) {
+	public ImageEvent(final Object source, final int ID, final int page, final String message) {
 		super(source, ID);
 		this.page = page;
 		this.message = message;
@@ -33,7 +33,7 @@ public class ImageEvent extends AWTEvent {
 	 * @param ID The IMAGE_xxxx type of the event
 	 * @param page The page which the event type referrs to
 	 */
-	public ImageEvent(Object source, int ID, int page) {
+	public ImageEvent(final Object source, final int ID, final int page) {
 		this(source, ID, page, "");
 	}
 	
@@ -45,7 +45,7 @@ public class ImageEvent extends AWTEvent {
 	 * @param ID the IMAGE_xxxx type of the event.
 	 * @param message The message to go along with the event.
 	 */
-	public ImageEvent(Object source, int ID, String message) {
+	public ImageEvent(final Object source, final int ID, final String message) {
 		this(source, ID, 0, message);
 	}
 	
@@ -58,7 +58,7 @@ public class ImageEvent extends AWTEvent {
 	 * @param source The object originating the event
 	 * @param ID The IMAGE_xxxx type of the event
 	 */
-	public ImageEvent(Object source, int ID) {
+	public ImageEvent(final Object source, final int ID) {
 		this(source, ID, 0);
 	}
 	

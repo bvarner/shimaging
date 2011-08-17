@@ -31,8 +31,9 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	protected Rectangle viewRect;
 	
 	private boolean allowSubClip;
-	
-	
+
+	private boolean debugClipping;
+		
 	public ImageCanvas() {
 		super();
 		this.model = null;
@@ -40,6 +41,10 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 		viewRect = new Rectangle();
 		
 		allowSubClip = true;
+
+		debugClipping =
+			   Boolean.parseBoolean(System.getProperty(
+					"com.shimaging.ImageCanvas.debugClipping", "false"));
 	}
 	
 	
@@ -48,7 +53,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	 * 
 	 * @param model The ImageModel to render.
 	 */
-	public void setModel(ImageModel model) {
+	public void setModel(final ImageModel model) {
 		this.model = model;
 	}
 	
@@ -69,7 +74,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	/**
 	 * Programmatically enables / disables subclipping.
 	 */
-	public void setAllowSubClipping(boolean b) {
+	public void setAllowSubClipping(final boolean b) {
 		// If we're allowing clipping and we're making it so we don't, then
 		// we need to immediately clear the clip on the model.
 		if (allowSubClip && !b) {
@@ -89,7 +94,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	/**
 	 * Implements Scrollable
 	 */
-	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+	public int getScrollableBlockIncrement(final Rectangle visibleRect, final int orientation, final int direction) {
 		if (orientation == SwingConstants.VERTICAL) {
 			return visibleRect.height;
 		} else {
@@ -117,7 +122,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	/**
 	 * Implements Scrollable
 	 */
-	public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+	public int getScrollableUnitIncrement(final Rectangle visibleRect, final int orientation, final int direction) {
 		if (orientation == SwingConstants.VERTICAL) {
 			return visibleRect.height / 5;
 		} else {
@@ -129,7 +134,7 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	/**
 	 * Implements ChangeListener
 	 */
-	public void stateChanged(ChangeEvent ce) {
+	public void stateChanged(final ChangeEvent ce) {
 		// If the source was a JViewport, and we allowClippedMode(),
 		// Set the Clip to that of the Viewport's bounds.
 		JViewport viewport = (JViewport)ce.getSource();
@@ -158,11 +163,11 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 		return d;
 	}
 	
-	public void paintBehindImage(Graphics g) {
+	public void paintBehindImage(final Graphics g) {
 	}
 	
 	
-	public void paintOverImage(Graphics g) {
+	public void paintOverImage(final Graphics g) {
 	}
 	
 	
@@ -172,18 +177,19 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 	 * pass the resulting Rect to the super-classes implementation.
 	 */
 	@Override
-	public void scrollRectToVisible(Rectangle rect) {
+	public void scrollRectToVisible(final Rectangle rect) {
+		Rectangle translatedRect = rect;
 		if (model!= null && model.getImage() != null) {
-			rect = model.getTransform().createTransformedShape(rect).getBounds();
+			translatedRect = model.getTransform().createTransformedShape(rect).getBounds();
 		}
-		super.scrollRectToVisible(rect);
+		super.scrollRectToVisible(translatedRect);
 	}
 	
 	/**
 	 * Paints the current Image of the ImageModel.
 	 */
 	@Override
-	public void paintComponent(Graphics g) {
+	public void paintComponent(final Graphics g) {
 		super.paintComponent(g);
 		if (model != null && model.getImage() != null) {
 			Graphics2D g2d = (Graphics2D)g;
@@ -202,18 +208,22 @@ public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
 				paintBehindImage(g);
 				
 				g2d.drawImage(model.getImage(), clip.x, clip.y, null);
-// draw a red border when using clipping regions.
-//				g2d.setColor(Color.RED);
-//				g2d.draw(new Rectangle(clip.x, clip.y, image.getWidth() - 1, image.getHeight() - 1));
+				if (debugClipping) {
+					// draw a red border when using clipping regions.
+					g2d.setColor(Color.RED);
+					g2d.draw(new Rectangle(clip.x, clip.y, image.getWidth() - 1, image.getHeight() - 1));
+				}
 			} else {
 				g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
 				
 				paintBehindImage(g);
 				
 				g2d.drawImage(model.getImage(), 0, 0, null);
-// draw a green border when NOT using clipping regions.
-//				g2d.setColor(Color.GREEN);
-//				g2d.draw(new Rectangle(0, 0, image.getWidth() - 1, image.getHeight() - 1));
+				if (debugClipping) {
+					// draw a green border when NOT using clipping regions.
+					g2d.setColor(Color.GREEN);
+					g2d.draw(new Rectangle(0, 0, image.getWidth() - 1, image.getHeight() - 1));
+				}
 			}
 			
 			paintOverImage(g);

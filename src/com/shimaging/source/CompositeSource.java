@@ -54,7 +54,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * Creates a new CompositeSource with no sources to composite.
 	 */
 	public CompositeSource() {
-		layers = new ArrayList<Compositable>();
+		layers = new ArrayList<Compositable>(2);
 		
 		identity = new AffineTransform();
 		
@@ -69,7 +69,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * 
 	 * @param bottom The lowest level in the composite stack.
 	 */
-	public CompositeSource(ImageSource bottom) {
+	public CompositeSource(final ImageSource bottom) {
 		this();
 		addLayer(bottom);
 	}
@@ -82,7 +82,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param bottom The lowest level in the composite stack.
 	 * @param mode The mode used to composite the ImageSource.
 	 */
-	public CompositeSource(ImageSource bottom, Composite mode) {
+	public CompositeSource(final ImageSource bottom, final Composite mode) {
 		this();
 		addLayer(bottom, mode);
 	}
@@ -95,7 +95,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param bottom The lowest level in the composite stack.
 	 * @param visible Weather or not the specified layer is visible.
 	 */
-	public CompositeSource(ImageSource bottom, boolean visible) {
+	public CompositeSource(final ImageSource bottom, final boolean visible) {
 		this();
 		addLayer(bottom, visible);
 	}
@@ -109,7 +109,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param mode The mode used to composite the ImageSource.
 	 * @param visible Weather or not the specified layer is visible.
 	 */
-	public CompositeSource(ImageSource bottom, Composite mode, boolean visible) {
+	public CompositeSource(final ImageSource bottom, final Composite mode, final boolean visible) {
 		this();
 		addLayer(bottom, mode, visible);
 	}
@@ -123,7 +123,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param mode The Composite to use when rendering
 	 * @param visible If true, the layers visibility is enabled.
 	 */
-	public final void addLayer(ImageSource layer, Composite mode, boolean visible) {
+	public final void addLayer(final ImageSource layer, final Composite mode, final boolean visible) {
 		layers.add(new Compositable(layer, mode, visible));
 		lastPage = -1;
 	}
@@ -136,7 +136,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param layer The ImageSource to add.
 	 * @param mode The Composite to use when rendering
 	 */
-	public final void addLayer(ImageSource layer, Composite mode) {
+	public final void addLayer(final ImageSource layer, final Composite mode) {
 		addLayer(layer, mode, true);
 	}
 	
@@ -147,7 +147,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param layer The ImageSource to add.
 	 * @param visible If true, the layers visibility is enabled.
 	 */
-	public final void addLayer(ImageSource layer, boolean visible) {
+	public final void addLayer(final ImageSource layer, final boolean visible) {
 		addLayer(layer, AlphaComposite.SrcOver, visible);
 	}
 	
@@ -157,12 +157,12 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 *
 	 * @param layer The IMageSource to add
 	 */
-	public final void addLayer(ImageSource layer) {
+	public final void addLayer(final ImageSource layer) {
 		this.addLayer(layer, AlphaComposite.SrcOver);
 	}
 	
 	
-	public void removeLayer(int layer) {
+	public void removeLayer(final int layer) {
 		Compositable c = layers.remove(layer);
 		c.source.dispose();
 		lastPage = -1;
@@ -186,18 +186,18 @@ public class CompositeSource extends DefaultThumbnailSource {
 	}
 	
 	
-	public Compositable getLayer(int layer) {
+	public Compositable getLayer(final int layer) {
 		return layers.get(layer);
 	}
 	
 	
-	public void setLayerVisibility(int layer, boolean visible) {
+	public void setLayerVisibility(final int layer, final boolean visible) {
 		layers.get(layer).enabled = visible;
 		lastPage = -1;
 	}
 	
 	
-	public boolean isLayerVisible(int layer) {
+	public boolean isLayerVisible(final int layer) {
 		return layers.get(layer).enabled;
 	}
 	
@@ -209,7 +209,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param index The index of the image in the ImageSource to composite.
 	 * @return A BufferedImage composition of all layers in this CompositeSource.
 	 */
-	public synchronized BufferedImage getImage(int index) {
+	public synchronized BufferedImage getImage(final int index) {
 		if (layers.size() > 0) {
 			if (index != lastPage) {
 				int layer = 0;
@@ -259,7 +259,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param dst The destination image about to be composited.
 	 * @return An AffineTransform to use. This implementation returns <code>identity</code>
 	 */
-	protected AffineTransform calculateTransform(BufferedImage src, BufferedImage dst) {
+	protected AffineTransform calculateTransform(final BufferedImage src, final BufferedImage dst) {
 		return identity;
 	}
 	
@@ -274,8 +274,10 @@ public class CompositeSource extends DefaultThumbnailSource {
 	 * @param transform An AffineTransform that should be applied to src as it
 	 * is composited into dst.
 	 */
-	protected BufferedImage doComposite(BufferedImage src, BufferedImage dst, Composite mode, 
-	                                    AffineTransform transform)
+	protected BufferedImage doComposite(final BufferedImage src,
+	                                    BufferedImage dst,
+	                                    final Composite mode,
+	                                    final AffineTransform transform)
 	{
 		if (src == null) {
 			return dst;
@@ -332,7 +334,7 @@ public class CompositeSource extends DefaultThumbnailSource {
 	
 	
 	public String getImageName() {
-		if (layers.size() == 0) {
+		if (layers.isEmpty()) {
 			return "";
 		}
 		return layers.get(0).source.getImageName();

@@ -69,7 +69,7 @@ public abstract class JAIImageSource extends DefaultThumbnailSource {
 	 * If pre-scaling (using JAI) is desired, set the preScale (both x and y axis) here.
 	 * @param preScale The multiplier to use when scaling x and y axis.
 	 */
-	public void setPreScale(float preScale) {
+	public void setPreScale(final float preScale) {
 		this.preScale = preScale;
 	}
 	
@@ -79,7 +79,7 @@ public abstract class JAIImageSource extends DefaultThumbnailSource {
 	 * @param stream The stream to open.
 	 * @param name The name of the stream
 	 */
-	protected void open(SeekableStream stream, String name) {
+	protected void open(final SeekableStream stream, final String name) {
 		close();
 		
 		this.fileName = name;
@@ -97,13 +97,13 @@ public abstract class JAIImageSource extends DefaultThumbnailSource {
 	 * This readStream should parse the current stream and populate the 
 	 * imageCache with new ImagePage objects..
 	 */
-	protected abstract void readStream(SeekableStream stream) throws IOException;
+	protected abstract void readStream(final SeekableStream stream) throws IOException;
 	
 	
 	/**
 	 * Caches the given ImagePage.
 	 */
-	protected void cachePage(ImagePage ip) {
+	protected void cachePage(final ImagePage ip) {
 		imgCache.put(ip.pageNumber, ip);
 	}
 	
@@ -111,13 +111,12 @@ public abstract class JAIImageSource extends DefaultThumbnailSource {
 	/**
 	 * Implements ImageSource.
 	 */
-	public BufferedImage getImage(int index) {
+	public BufferedImage getImage(final int index) {
 		ImagePage ip = imgCache.get(index);
 		if (ip != null) {
 			RenderedOp image = ip.image;
 			if (preScale != 1.0f) {
-				ScaleDescriptor scale = new ScaleDescriptor();
-				image = scale.create(image, preScale, preScale, 0f, 0f, 
+				image = ScaleDescriptor.create(image, preScale, preScale, 0f, 0f,
 						Interpolation.getInstance(Interpolation.INTERP_BILINEAR), 
 						null);
 			}
@@ -154,7 +153,7 @@ public abstract class JAIImageSource extends DefaultThumbnailSource {
 		int        pageNumber;
 		RenderedOp image;
 		
-		public ImagePage(int page, RenderedOp image) {
+		public ImagePage(final int page, final RenderedOp image) {
 			this.pageNumber = page;
 			this.image = image;
 		}

@@ -29,34 +29,34 @@ public class JAITiffImageSource extends JAIImageSource {
 	}
 	
 	
-	public JAITiffImageSource(File f) throws IOException {
+	public JAITiffImageSource(final File f) throws IOException {
 		this();
 		open(f);
 	}
 	
 	
-	public JAITiffImageSource(InputStream is, String name) throws IOException {
+	public JAITiffImageSource(final InputStream is, final String name) throws IOException {
 		this();
 		open(is, name);
 	}
 	
 	
-	public void addRenderingHints(RenderingHints nHints) {
+	public void addRenderingHints(final RenderingHints nHints) {
 		this.hints.add(nHints);
 	}
 	
 	
-	protected final void open(File f) throws IOException {
+	protected final void open(final File f) throws IOException {
 		open(new FileSeekableStream(f), f.getName());
 	}
 	
 	
-	protected final void open(InputStream is, String name) throws IOException {
+	protected final void open(final InputStream is, final String name) throws IOException {
 		open(new MemoryCacheSeekableStream(is), name);
 	}
 	
 	
-	protected void readStream(SeekableStream stream) throws IOException {
+	protected void readStream(final SeekableStream stream) throws IOException {
 		int totalPages = TIFFDirectory.getNumDirectories(stream);
 		long nextOffset = 0;
 		

@@ -123,7 +123,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Constructs a new ImageModel for controlling the given ImageSource.
 	 */
-	public ImageModel(ImageSource source) {
+	public ImageModel(final ImageSource source) {
 		this();
 		setSource(source);
 	}
@@ -139,7 +139,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Adds an ImageEventListener to inform interested parties that a specific 
 	 * type of event has occurred.
 	 */
-	public void addImageListener(ImageEventListener iel) {
+	public void addImageListener(final ImageEventListener iel) {
 		listeners.add(iel);
 	}
 	
@@ -147,7 +147,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Removes an ImageEventListener used to inform interested parties that a 
 	 * specific type of event has occurred.
 	 */
-	public void removeImageListener(ImageEventListener iel) {
+	public void removeImageListener(final ImageEventListener iel) {
 		listeners.remove(iel);
 	}
 	
@@ -155,7 +155,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Sets the ImageSource for this ImageModel to use when retrieving images
 	 */
-	public void setSource(ImageSource source) {
+	public void setSource(final ImageSource source) {
 		if (renderThread != null) {
 			try {
 				if (!renderThread.isInterrupted()) {
@@ -211,7 +211,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Otherwise, we clear the scale and go to full page rendering mode.
 	 */
-	public void setClip(Rectangle rect) {
+	public void setClip(final Rectangle rect) {
 		if (fitMode == FIT_NONE) {
 			int proposedPix = rect.width * rect.height;
 			int totalPix = cachedPageSize.width * cachedPageSize.height;
@@ -233,7 +233,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Sets the fit mode
 	 */
-	public void setFitMode(Rectangle rect, int fitMode) {
+	public void setFitMode(final Rectangle rect, final int fitMode) {
 		if (rect == null || fitMode == FIT_NONE) {
 			fitSize = new Dimension();
 			scalex = oldScalex;
@@ -259,7 +259,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	}
 	
 	
-	public void setPreserveAspectRatio(boolean b) {
+	public void setPreserveAspectRatio(final boolean b) {
 		this.preserveAspect = b;
 		updateTransform();
 		prefsNode.putBoolean("FitPreserveAspect", b);
@@ -328,7 +328,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Handles an error occurring from a source.
 	 */
-	public void error(String message) {
+	public void error(final String message) {
 		if (source != null) {
 			source.dispose();
 		}
@@ -398,7 +398,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * subtract 360, so that the calculated radians remain within the 0 - 360
 	 * degree equivalent range.
 	 */
-	public void setRotation(int degrees) {
+	public void setRotation(final int degrees) {
 		if (degrees >= 360) {
 			rotation = degrees - 360;
 		} else if (degrees < 0) {
@@ -424,7 +424,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * To rotate clockwise, add 90.
 	 * To rotate counter-clockwise, add -90.
 	 */
-	public void addRotation(int degrees) {
+	public void addRotation(final int degrees) {
 		setRotation(getRotation() + degrees);
 	}
 	
@@ -432,7 +432,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Sets the scale factor for rendering the current Image.
 	 */
-	public void setScale(float scalex, float scaley) {
+	public void setScale(final float scalex, final float scaley) {
 		this.scalex = scalex;
 		this.scaley = scaley;
 		
@@ -443,7 +443,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Sets the scale factor for rendering the current Image.
 	 */
-	public void setScale(float scale) {
+	public void setScale(final float scale) {
 		setScale(scale, scale);
 	}
 	
@@ -451,7 +451,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Scales the Current scale factor by the given amount.
 	 */
-	public void scaleBy(float factor) {
+	public void scaleBy(final float factor) {
 		setScale(scalex * (1.0f / factor), scaley * (1.0f / factor));
 	}
 	
@@ -469,7 +469,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Sets the Brightness.
 	 * Default is 0. Negative & positive numbers are acceptable.
 	 */
-	public void setBrightness(int offset) {
+	public void setBrightness(final int offset) {
 		brightness = (float)offset;
 		
 		updateRescale();
@@ -478,7 +478,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Adjusts the current brightness value by the given increment.
 	 */
-	public void adjustBrightness(int by) {
+	public void adjustBrightness(final int by) {
 		setBrightness(getBrightness() + by);
 	}
 	
@@ -495,7 +495,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Sets the current contrast value.
 	 * the default is 1.0 (float). Valid values are anything > 0.
 	 */
-	public void setContrast(float contrast) {
+	public void setContrast(final float contrast) {
 		this.contrast = contrast;
 		
 		updateRescale();
@@ -504,7 +504,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Adds the given increment to the current contrast value.
 	 */
-	public void adjustContrast(float by) {
+	public void adjustContrast(final float by) {
 		setContrast(getContrast() + by);
 	}
 	
@@ -540,7 +540,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * This method is invoked <b>prior</b> to any clipping, rotation, scaling,
 	 * or rescaling occurs.
 	 */
-	public BufferedImage preRender(BufferedImage image) {
+	public BufferedImage preRender(final BufferedImage image) {
 		return image;
 	}
 	
@@ -549,7 +549,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * process. Note that all clipping, rotation, and rescaling occurs -before-
 	 * this method is called.
 	 */
-	public BufferedImage extendRender(BufferedImage image) {
+	public BufferedImage extendRender(final BufferedImage image) {
 		return image;
 	}
 	
@@ -561,7 +561,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Updates the current image rotation / scale transform.
 	 */
-	private void updateTransform(boolean forceRepaint) {
+	private void updateTransform(final boolean forceRepaint) {
 		BufferedImage img = preRender(source.getImage(page));
 		
 		if (img != null) {
@@ -609,7 +609,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Updates the scale / rotate filter operation.
 	 */
-	private void updateTransform(BufferedImage img) {
+	private void updateTransform(final BufferedImage img) {
 		AffineTransform transform = new AffineTransform();
 		
 		
@@ -658,7 +658,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Updates the rescale operation based upon the current state.
 	 */
-	private void updateRescale(boolean forceRepaint) {
+	private void updateRescale(final boolean forceRepaint) {
 		// Find the means of all color bands in the image.
 		if (brightness != 0f || contrast != 1.0f) {
 			int numBands = image.getRaster().getNumBands();
@@ -682,11 +682,11 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	}
 	
 	
-	public void setPrintIndexOffset(int offset) {
+	public void setPrintIndexOffset(final int offset) {
 		printIndexOffset = offset;
 	}
 	
-	public void setPrintHeader(String s) {
+	public void setPrintHeader(final String s) {
 		printHeader = s;
 	}
 	
@@ -874,7 +874,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	/**
 	 * Implements a no-op ImageSource.
 	 */
-	private static class DummySource extends ImageSource {
+	private static class DummySource implements ImageSource {
 		public BufferedImage getImage(int index) {
 			return null;
 		}

@@ -9,16 +9,16 @@ import java.awt.image.BufferedImage;
 public abstract class PagelessSource extends DefaultThumbnailSource {
 	int pages = 0;
 	
-	protected PagelessSource(int fakePages) {
+	protected PagelessSource(final int fakePages) {
 		pages = fakePages;
 	}
 	
 	
-	public void setFakePages(int fakePages) {
+	public void setFakePages(final int fakePages) {
 		this.pages = fakePages;
 	}
 	
-	public BufferedImage getImage(int index) {
+	public BufferedImage getImage(final int index) {
 		return getImage();
 	}
 	

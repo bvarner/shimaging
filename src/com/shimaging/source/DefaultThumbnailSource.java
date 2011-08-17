@@ -14,7 +14,7 @@ import java.awt.image.BufferedImage;
  * 
  * @author Bryan.Varner
  */
-public abstract class DefaultThumbnailSource extends ImageSource {
+public abstract class DefaultThumbnailSource implements ImageSource {
 	int thumbWidth;
 	int thumbHeight;
 	

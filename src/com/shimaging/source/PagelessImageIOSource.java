@@ -22,24 +22,24 @@ public class PagelessImageIOSource extends PagelessSource {
 		name = "";
 	}
 	
-	public PagelessImageIOSource(File f) throws IOException {
+	public PagelessImageIOSource(final File f) throws IOException {
 		this();
 		image = ImageIO.read(f);
 		name = f.getName();
 	}
 	
-	public PagelessImageIOSource(URL url) throws IOException {
+	public PagelessImageIOSource(final URL url) throws IOException {
 		this();
 		image = ImageIO.read(url);
 		name = url.getFile();
 	}
 	
-	public PagelessImageIOSource(ImageInputStream stream) throws IOException {
+	public PagelessImageIOSource(final ImageInputStream stream) throws IOException {
 		this();
 		image = ImageIO.read(stream);
 	}
 	
-	public PagelessImageIOSource(InputStream stream) throws IOException {
+	public PagelessImageIOSource(final InputStream stream) throws IOException {
 		this();
 		image = ImageIO.read(stream);
 	}

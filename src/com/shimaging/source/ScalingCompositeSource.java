@@ -9,7 +9,7 @@ import java.awt.Composite;
 /**
  * This subclass of CompositeSource will scale all source layers to the exact
  * dimensions of the destination layer. The scale transform is only re-computed
- * if the scaled size of the source has a deviance +- rescaleThreashold.
+ * if the scaled size of the source has a deviance +- rescaleThreshold.
  * 
  * @Author Bryan Varner
  */
@@ -17,7 +17,7 @@ public class ScalingCompositeSource extends CompositeSource {
 	int oldHeight;
 	int oldWidth;
 	
-	int rescaleThreashold;
+	int rescaleThreshold;
 	
 	AffineTransform scale;
 	
@@ -28,33 +28,33 @@ public class ScalingCompositeSource extends CompositeSource {
 	}
 	
 	
-	public ScalingCompositeSource(ImageSource bottom) {
+	public ScalingCompositeSource(final ImageSource bottom) {
 		super(bottom);
 		init();
 	}
 	
 	
-	public ScalingCompositeSource(ImageSource bottom, Composite mode) {
+	public ScalingCompositeSource(final ImageSource bottom, final Composite mode) {
 		super(bottom, mode);
 		init();
 	}
 	
-	public ScalingCompositeSource(ImageSource bottom, boolean visible) {
+	public ScalingCompositeSource(final ImageSource bottom, final boolean visible) {
 		super(bottom, visible);
 		init();
 	}
 	
-	public ScalingCompositeSource(ImageSource bottom, Composite mode, boolean visible) {
+	public ScalingCompositeSource(final ImageSource bottom, final Composite mode, final boolean visible) {
 		super(bottom, mode, visible);
 		init();
 	}
 	
 	/**
-	 * Sets up the default threashold (8), and requires the next 
+	 * Sets up the default threshold (8), and requires the next 
 	 * calculateTransform to calculate the scale transform.
 	 */
 	protected final void init() {
-		rescaleThreashold = 8;
+		rescaleThreshold = 8;
 		oldHeight = 0;
 		oldWidth = 0;
 		scale = null;
@@ -62,31 +62,31 @@ public class ScalingCompositeSource extends CompositeSource {
 	
 	
 	/**
-	 * Set the threashold for subsequent rescaling.
+	 * Set the threshold for subsequent rescaling.
 	 */
-	public void setThreashold(int rescaleThreashold) {
-		this.rescaleThreashold = rescaleThreashold;
+	public void setThreshold(final int rescaleThreshold) {
+		this.rescaleThreshold = rescaleThreshold;
 	}
 	
 	
 	/**
-	 * Gets the rescale threashold.
+	 * Gets the rescale threshold.
 	 */
-	public int getThreashold() {
-		return rescaleThreashold;
+	public int getThreshold() {
+		return rescaleThreshold;
 	}
 	
 	
 	/**
 	 * Returns a scaleInstance AffineTransform to resize the src to fit the
-	 * bounds of the dst, within the rescale threashold.
+	 * bounds of the dst, within the rescale threshold.
 	 */
 	@Override
-	protected AffineTransform calculateTransform(BufferedImage src, BufferedImage dst) {
+	protected AffineTransform calculateTransform(final BufferedImage src, final BufferedImage dst) {
 		if (src != null && dst != null) {
 			if (scale == null || 
-			    Math.abs(dst.getWidth() - oldWidth) > rescaleThreashold ||
-			    Math.abs(dst.getHeight() - oldHeight) > rescaleThreashold)
+			    Math.abs(dst.getWidth() - oldWidth) > rescaleThreshold ||
+			    Math.abs(dst.getHeight() - oldHeight) > rescaleThreshold)
 			{
 				oldWidth = dst.getWidth();
 				oldHeight = dst.getHeight();

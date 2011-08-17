@@ -21,24 +21,24 @@ public class ImageIOSource extends DefaultThumbnailSource {
 		name = "";
 	}
 	
-	public ImageIOSource(File f) throws IOException {
+	public ImageIOSource(final File f) throws IOException {
 		this();
 		image = ImageIO.read(f);
 		name = f.getName();
 	}
 	
-	public ImageIOSource(URL url) throws IOException {
+	public ImageIOSource(final URL url) throws IOException {
 		this();
 		image = ImageIO.read(url);
 		name = url.getFile();
 	}
 	
-	public ImageIOSource(ImageInputStream stream) throws IOException {
+	public ImageIOSource(final ImageInputStream stream) throws IOException {
 		this();
 		image = ImageIO.read(stream);
 	}
 	
-	public ImageIOSource(InputStream stream) throws IOException {
+	public ImageIOSource(final InputStream stream) throws IOException {
 		this();
 		image = ImageIO.read(stream);
 	}
@@ -47,7 +47,7 @@ public class ImageIOSource extends DefaultThumbnailSource {
 		return image;
 	}
 	
-	public BufferedImage getImage(int index) {
+	public BufferedImage getImage(final int index) {
 		if (index > 0) {
 			return null;
 		}
@@ -60,7 +60,7 @@ public class ImageIOSource extends DefaultThumbnailSource {
 	}
 	
 	
-	public void setImageName(String name) {
+	public void setImageName(final String name) {
 		this.name = name;
 	}
 	

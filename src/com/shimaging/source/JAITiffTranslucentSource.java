@@ -27,18 +27,19 @@ public class JAITiffTranslucentSource extends JAITiffImageSource {
 		layout.setColorModel(new IndexColorModel(1, 2, legalBits, legalBits, legalBits, 0));
 		addRenderingHints(new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout));
 
+		// This would make black the transparent color...
 //		byte[] legalBits = {(byte)0, (byte)255};
 //		ImageLayout layout = new ImageLayout();
 //		layout.setColorModel(new IndexColorModel(1, 2, legalBits, legalBits, legalBits, 1));
 //		addRenderingHints(new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout));
 	}
 	
-	public JAITiffTranslucentSource(File f) throws IOException {
+	public JAITiffTranslucentSource(final File f) throws IOException {
 		this();
 		open(f);
 	}
 	
-	public JAITiffTranslucentSource(InputStream stream, String name) throws IOException {
+	public JAITiffTranslucentSource(final InputStream stream, final String name) throws IOException {
 		this();
 		open(stream, name);
 	}

@@ -259,7 +259,7 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	/**
 	 * Creates a new ImagePanel that uses the given ImageModel.
 	 */
-	public ImagePanel(ImageModel model) {
+	public ImagePanel(final ImageModel model) {
 		this();
 		
 		setModel(model);
@@ -291,14 +291,14 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	/**
 	 * Adds an ActionListener.
 	 */
-	public void addActionListener(ActionListener al) {
+	public void addActionListener(final ActionListener al) {
 		listeners.add(al);
 	}
 	
 	/**
 	 * Removes an ActionListener.
 	 */
-	public void removeActionListener(ActionListener al) {
+	public void removeActionListener(final ActionListener al) {
 		listeners.remove(al);
 	}
 	
@@ -399,7 +399,7 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	/**
 	 * Sets the ImageModel to render.
 	 */
-	public void setModel(ImageModel model) {
+	public void setModel(final ImageModel model) {
 		mdlImage = model;
 		mdlImage.addImageListener(this);
 		mdlImage.render();
@@ -428,7 +428,7 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	/**
 	 * Programmatically scrolls based upon the given direction and speed.
 	 */
-	public void scroll(int direction, int speed) {
+	public void scroll(final int direction, final int speed) {
 		if (direction == SCROLL_UP) {
 			int newValue = scrollPane.getVerticalScrollBar().getValue();
 			if (speed == SCROLL_BLOCK) {
@@ -476,7 +476,7 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	/**
 	 * Implements the ImageEventListener.
 	 */
-	public void imageChanged(ImageEvent ie) {
+	public void imageChanged(final ImageEvent ie) {
 		updateToolbar();
 		
 		if (ie.getType() == ImageEvent.IMAGE_RESIZE) {
@@ -497,7 +497,7 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	 * Any errors being emmited by the ImageModel are displayed in JOptionPane
 	 * dialog boxes.
 	 */
-	public void imageError(ImageEvent ie) {
+	public void imageError(final ImageEvent ie) {
 		JOptionPane.showMessageDialog(null, ie.getMessage(),
 								"Image Error",
 								JOptionPane.WARNING_MESSAGE);
@@ -507,7 +507,9 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	/**
 	 * Utility method to create a menu item
 	 */
-	private JMenuItem createMenuItem(String text, ActionListener listener) {
+	private JMenuItem createMenuItem(final String text, 
+							   final ActionListener listener)
+	{
 		return createMenuItem(text, 0, 0, 0, listener);
 	}
 	
@@ -515,8 +517,9 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	/**
 	 * Utility method to create a menu item
 	 */
-	private JMenuItem createMenuItem(String text, int keyCode, 
-							   int modifiers, ActionListener listener) 
+	private JMenuItem createMenuItem(final String text, final int keyCode,
+							   final int modifiers,
+							   final ActionListener listener)
 	{
 		return createMenuItem(text, 0, keyCode, modifiers, listener);
 	}
@@ -525,9 +528,9 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	/**
 	 * Utility method to create a menu item
 	 */
-	private JMenuItem createMenuItem(String text, int mnemonic, 
-							   int keyCode, int modifiers,
-							   ActionListener listener) 
+	private JMenuItem createMenuItem(final String text, final int mnemonic,
+							   final int keyCode, final int modifiers,
+							   final ActionListener listener)
 	{
 		JMenuItem item = new JMenuItem(text);
 		if (keyCode != 0 && modifiers != 0) {
@@ -550,7 +553,7 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 	 * listeners.
 	 */
 	private class ImagePanelActionListener implements ActionListener {
-		public void actionPerformed(ActionEvent ae) {
+		public void actionPerformed(final ActionEvent ae) {
 			if (ae.getActionCommand().equals("Previous Page")) {
 				mdlImage.prevPage();
 			} else if (ae.getActionCommand().equals("Next Page")) {
