@@ -927,6 +927,9 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 			try {
 				while(true) {
 					semaphore.acquire();
+
+					// Delay rendering 10ms on purpose.
+					Thread.sleep(10);
 					semaphore.drainPermits();
 
 					try {
