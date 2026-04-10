@@ -12,6 +12,63 @@ Shimaging is a Java Swing image visualization library with reusable widgets and 
 The repository includes the Maven Wrapper, so a separate Maven installation is optional.
 On first use, `./mvnw` downloads the pinned Maven distribution automatically.
 
+## GitHub Packages (Maven)
+
+This project is configured to publish Maven artifacts to GitHub Packages.
+
+### Publish from CI
+
+- The workflow at `.github/workflows/publish.yml` publishes on git tags matching `v*` and on manual workflow dispatch.
+- Repository permissions required: `packages: write`.
+
+### Publish locally
+
+Create `~/.m2/settings.xml` with a `github` server entry:
+
+```xml
+<settings>
+  <servers>
+	<server>
+	  <id>github</id>
+	  <username>YOUR_GITHUB_USERNAME</username>
+	  <password>YOUR_GITHUB_TOKEN</password>
+	</server>
+  </servers>
+</settings>
+```
+
+Then deploy:
+
+```bash
+./mvnw deploy
+```
+
+### Consume from another Maven project
+
+Add this repository to the consuming project's `pom.xml`:
+
+```xml
+<repositories>
+  <repository>
+	<id>github</id>
+	<url>https://maven.pkg.github.com/bvarner/shimaging</url>
+  </repository>
+</repositories>
+```
+
+Add this dependency:
+
+```xml
+<dependency>
+  <groupId>com.varnernet.shimaging</groupId>
+  <artifactId>shimaging</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+</dependency>
+```
+
+The consumer also needs credentials in `~/.m2/settings.xml` with a matching server id (`github`) and a token that has at least `read:packages`.
+For local publishing, use a token with `write:packages`.
+
 ## Documentation Site
 
 The static documentation site lives in `docs/` and is intended to be published with GitHub Pages.

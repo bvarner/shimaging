@@ -9,6 +9,22 @@
     <version>1.0.0-SNAPSHOT</version>
     <name>Shimaging</name>
     <description>Shimaging image visualization widgets and image sources.</description>
+    <url>https://github.com/bvarner/shimaging</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>LICENSE.TXT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://github.com/bvarner/shimaging.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/bvarner/shimaging.git</developerConnection>
+        <url>https://github.com/bvarner/shimaging</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,6 +33,14 @@
         <junit.jupiter.version>5.12.2</junit.jupiter.version>
         <main.class>com.varnernet.shimaging.TestApp</main.class>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/bvarner/shimaging</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -115,6 +139,32 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.11.2</version>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <doclint>none</doclint>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
