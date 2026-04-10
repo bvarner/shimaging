@@ -1,0 +1,190 @@
+<html lang="en">
+	<head>
+		<title>Shimaging - Advanced Topics</title>
+	</head>
+	<body>
+		<div style="text-align: center;">
+			<a href="index.html"><img src="shimaging_title.png" alt="Imaging, Shimaging!"/></a>
+			<p><em>An advanced imaging widget for Java Swing applications</em></p>
+			<p>[<a href="index.html">Home</a>] [<a href="faq.html">FAQ</a>] [<a href="use.html">General Usage</a>] [<a href="advanced.html">Advanced Topics</a>]</p>
+		</div>
+
+		
+		<h1>Advanced Topics: Getting the most out of Shimaging</h1>
+
+		<h2>Using CompositeSource</h2>
+		<p>CompositeSource composites more than one ImageSource into a final
+		rendering for display by an ImagePanel. It does so by treating each
+		ImageSource as a layer. Layers can be programmatically enabled and
+		disabled. By Default, layers are composited over the results of 
+		compositing lower layers. However, with the 
+		<code>addLayer(ImageSource source, Composite c)</code> method, a 
+		specific Composite class can be specified, allowing you to change the 
+		Composite behavior. Images are composited off-screen into a newly 
+		created buffer of same size as the first (bottom, layer zero)
+		ImageSource added.</p>
+		
+		<h3>Examples:</h3>
+		<p><b>Composite two layers with the second layer overtop the first.</b>
+		<pre>
+	CompositeSource cs = new CompositeSource(new ImageIOSource(new File("layerone.png")));
+	cs.addLayer(new ImageIOSource(new File("layertwo.png")));
+		</pre>
+		
+		<b>Composite two layers with the second layer beneath the first.</b>
+		<pre>
+	CompositeSource cs = new CompositeSource(new ImageIOSource(new File("layerone.png")));
+	cs.addLayer(new ImageIOSource(new File("layertwo.png")), AlphaComposite.DstOver);
+		</pre>
+		
+		<b>Composite three layers with the composite of the first two layers being composited over the third</b>
+		<pre>
+	CompositeSource cs = new CompositeSource(new ImageIOSource(new File("layerone.png")));
+	
+	// Composite layer 1 and 2 with AlphaComposite.SrcOver
+	cs.addLayer(new ImageIOSource(new File("layertwo.png"))); 
+	
+	/* Layer 3 is composited with the results of compositing the previous 
+	 * layers. So the combination (OVER) of layer 1 and 2 is composited overtop
+	 * layer 3.
+	 */
+	cs.addLayer(new ImageIOSource(new File("layerthree.png")), AlphaComposite.DstOver); 
+		</pre>
+		
+		
+		<h2>Beyond simple Compositing: Extending CompositeSource</h2>
+		<p>CompositeSource has a few methods that can be overridden to change
+		how compositing works. Aside from the obvious possibility of overriding
+		doComposite(), the method <code>protected AffineTransform 
+		calculateTransform(BufferedImage src, BufferedImage dst)</code> is 
+		invoked prior to doComposite for the given source and destination image.
+		The returned AffineTransform is used when rendering the source image
+		into the destination.</p>
+		<p>The default implementation in CompositeSource returns an Identity
+		AffineTransform. By overriding this method, ScalingCompositeSource 
+		ensures that the source image will fit within the destination's bounds, 
+		plus or minus a threshold value. The result is that images of varying
+		sizes end up scaled (ignores aspect ratio) to fit within the 
+		destination BufferedImage.</p>
+		
+		
+		<h2>What is a PagelessSource?</h2>
+		<p>A PagelessSource is a type of ImageSource that allows for emulating 
+		multi-page behavior with a single-page image. This can be useful in 
+		situations where you want to composite multiple images of varying 
+		numbers of pages. This class and its descendants are probably most
+		useful for folks that are familiar with enterprise scanning operations.</p>
+		
+		<p>As an example, let's say you've got a standard form in a light-red 
+		ink, which is scanned with a red dropout in batches of ten pages, and
+		output as a single TIFF file. The result is a TIFF image with ten pages,
+		where only the black text or markings that were filled out on the 
+		original form are visible. You'll likely want to composite an image of
+		the form that was dropped out during scanning with the scanned TIFF 
+		image that contains the data for each form. You can load the dropped-out
+		form image as a PagelessSource, set it's number of fake pages to that
+		of the TIFF image you're handling (in this case, ten), and put the 
+		Pageless form source and the TIFF source as layers in a CompositeSource.
+		</p>
+		
+		<p>This will let the CompositeSource render the dropout layer for every
+		page in the TIFF. Otherwise, if the Dropout layer returned a null image,
+		the layer would not be included in the final rendering.</p>
+		
+		<p>Here is an example screenshot of a CMS1500 Medicare form, scanned
+		red dropout (as a PagelessImageIOSource) composited with a test TIFF
+		image.</p>
+		
+		
+		<h2>Sub-Clipping &amp; You. Predictable performance for huge images</h2>
+		
+		<p>In a nutshell: <b>Subclipping is the act of only rendering the 
+		visible portion of an Image.</b></p>
+		<p>Typically, this results in renderings
+		and scrolling that take between 100ms and 200ms per repaint. This is 
+		a dramatic improvement for huge images, which in my benchmarking could
+		take 1600ms or more.</p>
+		
+		<h4>The Problem:</h4>
+		<p>When dealing with large images zooming, rescaling, and rotation can
+		become performance and memory hogs. A 300 x 300 dpi scanned TIFF image
+		can take up 35MB of heap space in the JVM when rendered. Zooming the 
+		entire image to 4x and painting the results to a Graphics object can 
+		quickly result in OutOfMemoryErrors, even when running with an 
+		initial heap size >= 128MB.</p>
+		
+		<h4>The Solution:</h4>
+		<p>What we call sub-clipping. Sub clipping makes the ImageModel aware
+		of its' view (the JViewport in the ImagePanel's JScrollPane) size and 
+		location. Using this sub-clipping region, we can dramatically increase 
+		the performance of rendering operations (zooming, rescaling, rotating)
+		by only applying the rendering the portion of the image that will be
+		visible as a result of the rendering operations.</p>
+		
+		<p>By default, when we start sub-clipping, we change our scrolling mode
+		which results in slightly more jittery performance while scrolling, but
+		much better performance overall when rendering the image. During initial
+		development, I was working with 300 x 300 dpi scans of 8.5" x 11" (A4)
+		paper. Performing a 90 degree rotation, rendering, and repainint the 
+		results took approximately 1600ms on my Pentium D workstation which was
+		far more powerful than the PC's the end-users would be working on. By
+		applying sub-clipping and then only rotating the visible portion of the
+		image, I could get a 800 x 600 visible region zoomed, rotated, and 
+		rescaled in ~160ms. A 160ms lag when scrolling in a JScrollPane, and 
+		being able to rotate, zoom, and rescale the visible image nearly 
+		instantly was far more acceptable than a 1.6 second lag every time you
+		zoomed, rotated, rescaled, or switched pages with blazing fast scrolling.</p>
+		
+		<p>Memory usage is reduced dramatically, especially when zooming in on
+		images or using very large images. OutOfMemoryErrors become less frequent.</p>
+
+		<p>Sub-clipping can be enabled or disabled by calling <code>setAllowSubClipping(boolean b)</code> 
+		on an ImagePanel's ImageCanvas.</p>
+		
+		<h2>Creating a custom ImageCanvas</h2>
+		<p>ImageCanvas provides two hook functions that can be overridden to
+		add additional paint layers to the ImageCanvas. They are,
+		<code>public void paintBehindImage(Graphics g)</code> and
+		<code>public void paintOverImage(Graphics g)</code>. Of course, there
+		are plenty of other methods you could override on ImageCanvas, and
+		as many ways to extend its behavior as you can dream up.</p>
+
+		<p>To create and use a custom ImageCanvas, you'll first need to create
+		a subclass of ImagePanel that overrides <code>protected ImageCanvas 
+		createImageCanvas()</code>. Have this method return a new instance of
+		your ImageCanvas subclass. As an example, the following two classes 
+		will result in an ImagePanel with a canvas that paints, "Hello World"
+		over top of the Image the ImageCanvas renders.
+		</p>
+		<pre>
+	/**
+	 * Our canvas class extends ImageCanvas, and overrides paintOverImage().
+	 */
+	class HelloCanvas extends ImageCanvas {
+		public HelloCanvas() {
+			super();
+		}
+		
+		/**
+		 * Draw "Hello World" at 30, 30 in the Graphics context.
+		 */
+		public void paintOverImage(Graphics g) {
+			g.setColor(Color.RED);
+			g.drawString("Hello World!", 30, 30);
+		}
+	}
+	
+	/**
+	 * Creates an anonymous inner class that extends ImagePanel.
+	 */
+	ImagePanel iPanel = new ImagePanel(source) {
+		protected ImageCanvas createImageCanvas() {
+			return new HelloCanvas();
+		}
+	};
+		</pre>
+
+		<hr>
+		<p>Return to <a href="use.html">General Usage</a> or go back <a href="index.html">Home</a>.</p>
+	</body>
+</html>

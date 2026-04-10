@@ -12,6 +12,18 @@ Shimaging is a Java Swing image visualization library with reusable widgets and 
 The repository includes the Maven Wrapper, so a separate Maven installation is optional.
 On first use, `./mvnw` downloads the pinned Maven distribution automatically.
 
+## Documentation Site
+
+The static documentation site lives in `docs/` and is intended to be published with GitHub Pages.
+
+For a repository-hosted GitHub Pages site, configure:
+
+- **Source**: Deploy from a branch
+- **Branch**: `main`
+- **Folder**: `/docs`
+
+The `docs/` directory includes a `.nojekyll` marker so the site is served as plain static content.
+
 ## Build
 
 ```bash
@@ -37,7 +49,7 @@ java -jar target/shimaging-1.0.0-SNAPSHOT.jar
 Run the composite TIFF demo app:
 
 ```bash
-java -cp target/shimaging-1.0.0-SNAPSHOT.jar com.shimaging.CompositeTiffTestApp
+java -cp target/shimaging-1.0.0-SNAPSHOT.jar com.varnernet.shimaging.CompositeTiffTestApp
 ```
 
 ## Test
@@ -56,6 +68,7 @@ java -cp target/shimaging-1.0.0-SNAPSHOT.jar com.shimaging.CompositeTiffTestApp
 ## Project Structure
 
 ```text
+docs/                   GitHub Pages static documentation site
 src/main/java/          Source code
 src/main/resources/     Resources (icons, etc.)
 src/test/java/          Unit tests

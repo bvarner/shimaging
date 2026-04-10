@@ -1,0 +1,100 @@
+<html lang="en">
+	<head>
+		<title>Shimaging - General Usage</title>
+	</head>
+	<body>
+		<div style="text-align: center;">
+			<a href="index.html"><img src="shimaging_title.png" alt="Imaging, Shimaging!"/></a>
+			<p><em>An advanced imaging widget for Java Swing applications</em></p>
+			<p>[<a href="index.html">Home</a>] [<a href="faq.html">FAQ</a>] [<a href="use.html">General Usage</a>] [<a href="advanced.html">Advanced Topics</a>]</p>
+			<hr/>
+		</div>
+
+		
+		<h1>General Use of Shimaging</h1>
+		<p>From the repository root, the quickest way to build and launch the demo application is:</p>
+		<pre>
+	./mvnw clean package
+	./mvnw exec:java
+		</pre>
+
+		<h2>Manipulating a JPG, PNG, GIF, etc... using ImageIO</h2>
+		<p>To have Shimaging display an image, you'll need three objects. 
+		These are an ImageSource, an ImageModel, and an ImagePanel. For the 
+		purposes of this simple use guide, we'll stick with using the ImageIO
+		framework and loading a simple JPG image. The
+		following code shows the basic pattern used by the current project.</p>
+
+		<pre>
+	1: ImageSource source = new ImageIOSource(new File("resources/sample.jpg"));
+	2: ImageModel model = new ImageModel(source);
+	3: ImagePanel iPanel = new ImagePanel(model);
+	
+	Container.add(iPanel); // Add the ImagePanel to a Container instance.
+		</pre>
+		
+		<p>
+		<b>[1]</b> Create an ImageIOSource. This class uses the ImageIO framework to load the specified jpg.<br/>
+		<b>[2]</b> Create a model for the image. The model is what holds the state for the image, and is what we can use to rotate, zoom, rescale, etc.<br/>
+		<b>[3]</b> Create the ImagePanel. This is the Swing widget (complete with JToolbar) that we can embed in an AWT Container -- for example, a JPanel.<br/>
+		</p>
+		
+		<p>ImageIOSource can load images for any registered ImageIO decoder from
+		File, URL, InputStream, and ImageInputStream objects.</p>
+		
+		<h2>Class Diagrams:</h2>
+		<p>Warning: These images are very large!</p>
+		<table>
+			<tr>
+				<td>
+					<a href="WidgetMVC.png"><img src="WidgetMVC_thumb.png" alt="MVC class diagram thumbnail"/></a><br/>
+					<i>MVC Class Diagram</i>
+				</td>
+				<td>
+					<a href="SourceInheritance.png"><img src="SourceInheritance_thumb.png" alt="Image source inheritance diagram thumbnail"/></a><br/>
+					<i>ImageSource Inheritance</i>
+				</td>
+			</tr>
+		</table>
+		
+		
+		<h2>Getting a JMenu for addition to a JMenuBar</h2>
+		ImagePanel can create a JMenu that can be added to a JMenuBar. You could, for example use it like this:
+		<pre>
+	1: public class MyFrame extends JFrame {
+	2: 	ImagePanel iPanel;
+	3:	JMenuBar mnuBar;
+	4:	public void MyFrame() {
+	5:		super("A simple JFrame with a menu bar and an ImagePanel");
+	6:		iPanel = new ImagePanel();
+	7:		setContentPane(iPanel); // This is a way of setting the ImagePanel as the contents of a JFrame.
+	8:		mnuBar = new JMenuBar();
+	9:		mnuBar.add(iPanel.getMenu());
+	10:		setJMenuBar(mnuBar);
+	11:	}
+	12:}
+		</pre>
+		
+		<p>The created menu will automatically be updated as the toolbar
+		buttons are updated, enabling and disabling the proper menu items.</p>
+		
+		<h2>Using ImageIO to load a multi-page TIFF</h2>
+		<p>Dealing with multi-page TIFF files was the reason Shimaging was
+		originally created. There are a few classes that will let you work 
+		with TIFF images easily, using ImageIO to load all the pages of the
+		Image. The simplest case of loading a TIFF image from a file...
+		</p>
+		<pre>
+	1: File f = new File("path_to_tiff");
+	2: ImageSource source = new TiffImageSource(f);
+	// ... Construct an ImageModel & ImagePanel as usual
+		</pre>
+		
+		<p>Of course, TiffImageSource also allows for loading from an
+		InputStream. This opens up the possibility of using URL.openStream()
+		to load remote objects.</p>
+		
+		<hr>
+		<p>Next: review <a href="advanced.html">Advanced Topics</a> or return <a href="index.html">Home</a>.</p>
+	</body>
+</html>
