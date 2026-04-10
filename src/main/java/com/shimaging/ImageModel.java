@@ -1,6 +1,6 @@
 package com.shimaging;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -14,8 +14,12 @@ import java.awt.print.PageFormat;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.IndexColorModel;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import java.util.prefs.*;
 
@@ -27,6 +31,8 @@ import java.util.prefs.*;
  * @author Bryan.Varner
  */
 public final class ImageModel implements Printable, PreferenceChangeListener {
+	private static final Logger LOGGER = Logger.getLogger(ImageModel.class.getName());
+
 	public static final int FIT_NONE = 0;
 	public static final int FIT_WIDTH = 1;
 	public static final int FIT_HEIGHT = 2;
@@ -60,10 +66,12 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 
 	RescaleOp invertOp;
 	
-	ArrayList<ImageEventListener> listeners;
+	List<ImageEventListener> listeners;
 
-	private final RenderThread renderThread = new RenderThread();
-	
+	private final Object renderLock = new Object();
+	private volatile boolean renderPending;
+	private SwingWorker<Void, Void> renderWorker;
+
 	int printIndexOffset = 0;
 	String printHeader = "";
 	
@@ -74,7 +82,7 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * manipulation commands asynchronously, and no ImageSource.
 	 */
 	public ImageModel() {
-		listeners = new ArrayList<ImageEventListener>();
+		listeners = new CopyOnWriteArrayList<ImageEventListener>();
 		prefsNode = Preferences.userNodeForPackage(this.getClass());
 		
 		image = null;
@@ -154,10 +162,6 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		this.source = source;
 		
 		this.page = 0;
-
-		if (!renderThread.isAlive()) {
-			renderThread.start();
-		}
 
 		updateTransform();
 	}
@@ -311,8 +315,8 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		if (source != null) {
 			source.dispose();
 		}
-		
-		new Thread(new FireError(message)).start();
+
+		fireEvent(new ImageEvent(this, ImageEvent.IMAGE_ERROR, message));
 	}
 	
 	
@@ -699,7 +703,13 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Places a new entry into the render Queue.
 	 */
 	public void queueRender() {
-		renderThread.getSemaphore().release();
+		synchronized (renderLock) {
+			renderPending = true;
+			if (renderWorker == null || renderWorker.isDone()) {
+				renderWorker = createRenderWorker();
+				renderWorker.execute();
+			}
+		}
 	}
 	
 	
@@ -707,7 +717,57 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Stops the render-thread.
 	 */
 	public void haltRender() {
-		renderThread.interrupt();
+		synchronized (renderLock) {
+			renderPending = false;
+			if (renderWorker != null) {
+				renderWorker.cancel(true);
+				renderWorker = null;
+			}
+		}
+	}
+
+	private SwingWorker<Void, Void> createRenderWorker() {
+		return new SwingWorker<Void, Void>() {
+			@Override
+			protected Void doInBackground() {
+				while (!isCancelled()) {
+					boolean shouldRender;
+					synchronized (renderLock) {
+						shouldRender = renderPending;
+						renderPending = false;
+					}
+
+					if (!shouldRender) {
+						break;
+					}
+
+					try {
+						Thread.sleep(10);
+						render();
+					} catch (InterruptedException ie) {
+						Thread.currentThread().interrupt();
+						return null;
+					} catch (OutOfMemoryError oome) {
+						LOGGER.log(Level.WARNING, "Rendering ran out of memory; requesting GC.", oome);
+						System.gc();
+					} catch (Exception ex) {
+						LOGGER.log(Level.WARNING, "Unhandled rendering exception.", ex);
+					}
+				}
+				return null;
+			}
+
+			@Override
+			protected void done() {
+				synchronized (renderLock) {
+					renderWorker = null;
+					if (renderPending) {
+						renderWorker = createRenderWorker();
+						renderWorker.execute();
+					}
+				}
+			}
+		};
 	}
 	
 	/**
@@ -803,10 +863,10 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 			 * to run it through the identity transform to create a non-IndexColorModel
 			 */
 			if (processedImage.getColorModel() instanceof IndexColorModel) {
-				processedImage = new AffineTransformOp(new AffineTransform(), null).filter(processedImage, processedImage);
+				processedImage = new AffineTransformOp(new AffineTransform(), null).filter(processedImage, null);
 			}
 
-			processedImage = rescaleOp.filter(processedImage, processedImage);
+			processedImage = rescaleOp.filter(processedImage, null);
 		}
 		
 		/* Handle inversion!
@@ -818,10 +878,10 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 			 * to run it through the identity transform to create a non-IndexColorModel
 			 */
 			if (processedImage.getColorModel() instanceof IndexColorModel) {
-				processedImage = new AffineTransformOp(new AffineTransform(), null).filter(processedImage, processedImage);
+				processedImage = new AffineTransformOp(new AffineTransform(), null).filter(processedImage, null);
 			}
 			
-			processedImage = invertOp.filter(processedImage, processedImage);
+			processedImage = invertOp.filter(processedImage, null);
 		}
 		
 		
@@ -834,11 +894,17 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		image = extendRender(processedImage);
 		
 		// Fire an INVALID if there are no additional Renders pending.
-		if (renderThread.getSemaphore().availablePermits() <= 0) {
+		if (!hasPendingRenderRequest()) {
 			fireEvent(new ImageEvent(this, ImageEvent.IMAGE_INVALID, page));
 		}
 	}
-	
+
+	private boolean hasPendingRenderRequest() {
+		synchronized (renderLock) {
+			return renderPending;
+		}
+	}
+
 	
 	public void preferenceChange(PreferenceChangeEvent pce) {
 	}
@@ -848,16 +914,24 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 	 * Fires events to the registered listeners
 	 */
 	void fireEvent(ImageEvent ie) {
-		for (ImageEventListener listener : listeners) {
-			switch (ie.getType()) {
-				case ImageEvent.IMAGE_INVALID:
-				case ImageEvent.IMAGE_RESIZE:
-					listener.imageChanged(ie);
-					break;
-				case ImageEvent.IMAGE_ERROR:
-					listener.imageError(ie);
-					break;
+		Runnable dispatch = () -> {
+			for (ImageEventListener listener : listeners) {
+				switch (ie.getType()) {
+					case ImageEvent.IMAGE_INVALID:
+					case ImageEvent.IMAGE_RESIZE:
+						listener.imageChanged(ie);
+						break;
+					case ImageEvent.IMAGE_ERROR:
+						listener.imageError(ie);
+						break;
+				}
 			}
+		};
+
+		if (SwingUtilities.isEventDispatchThread()) {
+			dispatch.run();
+		} else {
+			SwingUtilities.invokeLater(dispatch);
 		}
 	}
 	
@@ -890,56 +964,4 @@ public final class ImageModel implements Printable, PreferenceChangeListener {
 		}
 	}
 	
-	/**
-	 * A Runnable that executes to fire error messages
-	 */
-	private class FireError implements Runnable {
-		String message;
-		
-		public FireError(String message) {
-			this.message = message;
-		}
-		
-		public void run() {
-			fireEvent(new ImageEvent(this, ImageEvent.IMAGE_ERROR, message));
-		}
-	}
-	
-	
-	/**
-	 * Executes the render method asynchronously.
-	 */
-	private class RenderThread extends Thread {
-		private Semaphore semaphore;
-
-		public RenderThread() {
-			super("ImagePanel Picasso");
-			this.setDaemon(true);
-			this.semaphore = new Semaphore(1);
-		}
-
-		public Semaphore getSemaphore() {
-			return this.semaphore;
-		}
-		
-		@Override
-		public void run() {
-			try {
-				while(true) {
-					semaphore.acquire();
-
-					// Delay rendering 10ms on purpose.
-					Thread.sleep(10);
-					semaphore.drainPermits();
-
-					try {
-						render();
-					} catch (OutOfMemoryError oome) {
-						System.gc();
-					} catch (Exception ex) { }
-				}
-			} catch (InterruptedException ie) {
-			}
-		}
-	}
 }

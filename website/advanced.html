@@ -6,11 +6,11 @@
 		<center>
 			<a href="index.html"><img src="shimaging_title.png" alt="Imaging, Shimaging!" border="0"/></a>
 			<i><p>An advanced Imaging widget for Java Swing applications</p></i>
-			[<a href="index.html">Home</a>] [<a href="http://sourceforge.net/project/platformdownload.php?group_id=231492">Download</a>] [<a href="faq.html">F.A.Q.</a>] [<a href="shimaging/index.html">Java API</a>] [<a href="use.html">General Usage</a>] [<a href="advanced.html">Advanced Topics</a>] [<a href="http://sourceforge.net/projects/shimaging">SF Project</a>]		</center>
+			[<a href="index.html">Home</a>] [<a href="faq.html">FAQ</a>] [<a href="use.html">General Usage</a>] [<a href="advanced.html">Advanced Topics</a>] [<a href="../README.md">README</a>]		</center>
+
 		
-		
-		<h1>Advanced Topics : Getting the most out of Shimaging</h1>
-		
+		<h1>Advanced Topics: Getting the most out of Shimaging</h1>
+
 		<h2>Using CompositeSource</h2>
 		<p>CompositeSource composits more than one ImageSource into a final 
 		rendering for display by an ImagePanel. It does so by treating each
@@ -71,7 +71,7 @@
 		<p>A PagelessSource is a type of ImageSource that allows for emulating 
 		multi-page behavior with a single-page image. This can be useful in 
 		situations where you want to composite multiple images of varying 
-		numbers of pages. This class and it's decendents are probably most
+		numbers of pages. This class and its descendants are probably most
 		useful for folks that are familiar with enterprise scanning operations.</p>
 		
 		<p>As an example, let's say you've got a standard form in a light-red 
@@ -90,8 +90,8 @@
 		page in the TIFF. Otherwise, if the Dropout layer returned a null image,
 		the layer would not be included in the final rendering.</p>
 		
-		<p>Hers is an example screenshot of a CMS1500 Medicare form, scanned
-		red dropout (as a PagelessImageIOSource) composited with a test TIFF 
+		<p>Here is an example screenshot of a CMS1500 Medicare form, scanned
+		red dropout (as a PagelessImageIOSource) composited with a test TIFF
 		image.</p>
 		
 		
@@ -135,8 +135,8 @@
 		zoomed, rotated, rescaled, or switched pages with blazing fast scrolling.</p>
 		
 		<p>Memory usage is reduced dramatically, especially when zooming in on
-		images, or using large images. OutOfMemoryError's become more scarce
-		
+		images or using very large images. OutOfMemoryErrors become less frequent.</p>
+
 		<p>Sub-clipping can be enabled or disabled by calling <code>setAllowSubClipping(boolean b)</code> 
 		on an ImagePanel's ImageCanvas.</p>
 		
@@ -184,6 +184,6 @@
 		</p>
 		
 		<hr>
-		<a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=128730&amp;type=5" width="210" height="62" border="0" alt="SourceForge.net Logo" /></a>
+		<p><a href="../README.md">See the README for current build, test, and run instructions.</a></p>
 	</body>
 </html>

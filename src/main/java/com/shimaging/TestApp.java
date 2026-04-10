@@ -12,11 +12,16 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TestApp extends JFrame {
+	private static final Logger LOGGER = Logger.getLogger(TestApp.class.getName());
+
 	ImageModel model;
 	ImagePanel view;
 
@@ -33,41 +38,26 @@ public class TestApp extends JFrame {
 
 		JMenu mnuFile = new JMenu("File");
 		JMenuItem mnuFileClose = new JMenuItem("Close");
-		mnuFileClose.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent ae) {
-					model.removeSource();
-				}
-		});
+		mnuFileClose.addActionListener(ae -> model.removeSource());
 		JMenuItem mnuFileOpen = new JMenuItem("Open");
-		mnuFileOpen.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent ae) {
-					// Show the dialog.
-					JFileChooser chooser = new JFileChooser();
-					int choice = chooser.showOpenDialog(null);
-					if (choice == JFileChooser.APPROVE_OPTION) {
-						model.removeSource();
-						try {
-							model.setSource(new ImageIOSource(chooser.getSelectedFile()));
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
+		mnuFileOpen.addActionListener(ae -> {
+			JFileChooser chooser = new JFileChooser();
+			int choice = chooser.showOpenDialog(null);
+			if (choice == JFileChooser.APPROVE_OPTION) {
+				model.removeSource();
+				try {
+					model.setSource(new ImageIOSource(chooser.getSelectedFile()));
+				} catch (Exception ex) {
+					LOGGER.log(Level.WARNING, "Failed to open selected image.", ex);
 				}
+			}
 		});
 
 		JMenuItem mnuFilePrint = new JMenuItem("Print");
-		mnuFilePrint.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent ae) {
-					new PrintThread(model).start();
-				}
-		});
+		mnuFilePrint.addActionListener(ae -> new PrintThread(model).start());
 
 		JMenuItem mnuFileExit = new JMenuItem("Exit");
-		mnuFileExit.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent ae) {
-					System.exit(0);
-				}
-		});
+		mnuFileExit.addActionListener(ae -> System.exit(0));
 
 		mnuFile.add(mnuFileOpen);
 		mnuFile.add(mnuFileClose);
@@ -82,24 +72,25 @@ public class TestApp extends JFrame {
 
 		JMenu mnuTest = new JMenu("Test Functions");
 		JMenuItem mnuScrollTo = new JMenuItem("Scroll To Rect");
-		mnuScrollTo.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent ae) {
-					String rectDef = JOptionPane.showInputDialog("Enter Rectangle dimensions as \"x, y, width, height\"");
-					StringTokenizer st = new StringTokenizer(rectDef, ",", false);
-					if (st.countTokens() == 4) {
-						try {
-							int x = Integer.parseInt(st.nextToken().trim());
-							int y = Integer.parseInt(st.nextToken().trim());
-							int width = Integer.parseInt(st.nextToken().trim());
-							int height = Integer.parseInt(st.nextToken().trim());
+		mnuScrollTo.addActionListener(ae -> {
+			String rectDef = JOptionPane.showInputDialog("Enter Rectangle dimensions as \"x, y, width, height\"");
+			if (rectDef == null) {
+				return;
+			}
+			StringTokenizer st = new StringTokenizer(rectDef, ",", false);
+			if (st.countTokens() == 4) {
+				try {
+					int x = Integer.parseInt(st.nextToken().trim());
+					int y = Integer.parseInt(st.nextToken().trim());
+					int width = Integer.parseInt(st.nextToken().trim());
+					int height = Integer.parseInt(st.nextToken().trim());
 
-							Rectangle r = new Rectangle(x, y, width, height);
-							view.getCanvas().scrollRectToVisible(r);
-						} catch (Exception ex) {
-							System.out.println(ex);
-						}
-					}
+					Rectangle r = new Rectangle(x, y, width, height);
+					view.getCanvas().scrollRectToVisible(r);
+				} catch (Exception ex) {
+					LOGGER.log(Level.FINE, "Invalid rectangle input: " + rectDef, ex);
 				}
+			}
 		});
 
 		mnuTest.add(mnuScrollTo);
@@ -110,14 +101,11 @@ public class TestApp extends JFrame {
 		pack();
 	}
 
-	@Override
-	public void show() {
-		super.show();
-	}
-
 	public static void main(String[] args) {
-		TestApp ta = new TestApp();
-		ta.show();
+		SwingUtilities.invokeLater(() -> {
+			TestApp ta = new TestApp();
+			ta.setVisible(true);
+		});
 	}
 
 	private class PrintThread extends Thread {

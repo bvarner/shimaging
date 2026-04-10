@@ -13,17 +13,22 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import java.io.*;
 
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class CompositeJAITIFFTestApp extends JFrame {
+public class CompositeTiffTestApp extends JFrame {
+	private static final Logger LOGGER = Logger.getLogger(CompositeTiffTestApp.class.getName());
+
 	ImageSource source;
 	ImageModel model;
 	ImagePanel view;
 	
-	public CompositeJAITIFFTestApp() {
+	public CompositeTiffTestApp() {
 		super("Test Imaging Application!");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		try {
@@ -31,8 +36,8 @@ public class CompositeJAITIFFTestApp extends JFrame {
 			CompositeSource comp = new ScalingCompositeSource();
 			
 			// Add the first layer.
-			comp.addLayer(new JAITiffTranslucentSource(new File("TestImages/150812000400.tif")));
-			
+			comp.addLayer(new TiffTranslucentSource(new File("TestImages/150812000400.tif")));
+
 			// Setup a pageless PNG source.
 			PagelessSource ps = new PagelessImageIOSource(new File("TestImages/CMS1500.png"));
 			// Tell it to fake as many pages as the composite source currently has.
@@ -52,43 +57,28 @@ public class CompositeJAITIFFTestApp extends JFrame {
 			
 			JMenu mnuFile = new JMenu("File");
 			JMenuItem mnuFileClose = new JMenuItem("Close");
-			mnuFileClose.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						model.removeSource();
-					}
-			});
+			mnuFileClose.addActionListener(ae -> model.removeSource());
 			JMenuItem mnuFileOpen = new JMenuItem("Open");
-			mnuFileOpen.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						// Show the dialog.
-						JFileChooser chooser = new JFileChooser();
-						int choice = chooser.showOpenDialog(null);
-						if (choice == JFileChooser.APPROVE_OPTION) {
-							model.removeSource();
-							try {
-								source = new ImageIOSource(chooser.getSelectedFile());
-								model.setSource(source);
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-						}
+			mnuFileOpen.addActionListener(ae -> {
+				JFileChooser chooser = new JFileChooser();
+				int choice = chooser.showOpenDialog(null);
+				if (choice == JFileChooser.APPROVE_OPTION) {
+					model.removeSource();
+					try {
+						source = new ImageIOSource(chooser.getSelectedFile());
+						model.setSource(source);
+					} catch (Exception ex) {
+						LOGGER.log(Level.WARNING, "Failed to open selected image.", ex);
 					}
+				}
 			});
 			
 			JMenuItem mnuFilePrint = new JMenuItem("Print");
-			mnuFilePrint.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						new PrintThread(model).start();
-					}
-			});
-			
+			mnuFilePrint.addActionListener(ae -> new PrintThread(model).start());
+
 			JMenuItem mnuFileExit = new JMenuItem("Exit");
-			mnuFileExit.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						System.exit(0);
-					}
-			});
-			
+			mnuFileExit.addActionListener(ae -> System.exit(0));
+
 			mnuFile.add(mnuFileOpen);
 			mnuFile.add(mnuFileClose);
 			mnuFile.addSeparator();
@@ -102,24 +92,25 @@ public class CompositeJAITIFFTestApp extends JFrame {
 			
 			JMenu mnuTest = new JMenu("Test Functions");
 			JMenuItem mnuScrollTo = new JMenuItem("Scroll To Rect");
-			mnuScrollTo.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						String rectDef = JOptionPane.showInputDialog("Enter Rectangle dimensions as \"x, y, width, height\"");
-						StringTokenizer st = new StringTokenizer(rectDef, ",", false);
-						if (st.countTokens() == 4) {
-							try {
-								int x = Integer.parseInt(st.nextToken().trim());
-								int y = Integer.parseInt(st.nextToken().trim());
-								int width = Integer.parseInt(st.nextToken().trim());
-								int height = Integer.parseInt(st.nextToken().trim());
-								
-								Rectangle r = new Rectangle(x, y, width, height);
-								view.getCanvas().scrollRectToVisible(r);
-							} catch (Exception ex) {
-								System.out.println(ex);
-							}
-						}
+			mnuScrollTo.addActionListener(ae -> {
+				String rectDef = JOptionPane.showInputDialog("Enter Rectangle dimensions as \"x, y, width, height\"");
+				if (rectDef == null) {
+					return;
+				}
+				StringTokenizer st = new StringTokenizer(rectDef, ",", false);
+				if (st.countTokens() == 4) {
+					try {
+						int x = Integer.parseInt(st.nextToken().trim());
+						int y = Integer.parseInt(st.nextToken().trim());
+						int width = Integer.parseInt(st.nextToken().trim());
+						int height = Integer.parseInt(st.nextToken().trim());
+
+						Rectangle r = new Rectangle(x, y, width, height);
+						view.getCanvas().scrollRectToVisible(r);
+					} catch (Exception ex) {
+						LOGGER.log(Level.FINE, "Invalid rectangle input: " + rectDef, ex);
 					}
+				}
 			});
 			
 			mnuTest.add(mnuScrollTo);
@@ -127,20 +118,17 @@ public class CompositeJAITIFFTestApp extends JFrame {
 			
 			setJMenuBar(mnuBar);
 		} catch (IOException ioe) {
-			System.err.println(ioe.toString());
+			LOGGER.log(Level.WARNING, "Failed to initialize composite test app.", ioe);
 		}
 		
 		pack();
 	}
 	
-	@Override
-	public void show() {
-		super.show();
-	}
-	
 	public static void main(String[] args) {
-		CompositeJAITIFFTestApp ta = new CompositeJAITIFFTestApp();
-		ta.show();
+		SwingUtilities.invokeLater(() -> {
+			CompositeTiffTestApp ta = new CompositeTiffTestApp();
+			ta.setVisible(true);
+		});
 	}
 	
 	private class PrintThread extends Thread {

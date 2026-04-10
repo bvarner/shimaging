@@ -6,7 +6,7 @@
 		<center>
 			<a href="index.html"><img src="shimaging_title.png" alt="Imaging, Shimaging!" border="0"/></a>
 			<i><p>An advanced Imaging widget for Java Swing applications</p></i>
-			[<a href="index.html">Home</a>] [<a href="http://sourceforge.net/project/platformdownload.php?group_id=231492">Download</a>] [<a href="faq.html">F.A.Q.</a>] [<a href="shimaging/index.html">Java API</a>] [<a href="use.html">General Usage</a>] [<a href="advanced.html">Advanced Topics</a>] [<a href="http://sourceforge.net/projects/shimaging">SF Project</a>]			<hr/>
+			[<a href="index.html">Home</a>] [<a href="faq.html">FAQ</a>] [<a href="use.html">General Usage</a>] [<a href="advanced.html">Advanced Topics</a>] [<a href="../README.md">README</a>]			<hr/>
 		</center>
 		
 		
@@ -15,11 +15,9 @@
 		<p>To have Shimaging display an image, you'll need three objects. 
 		These are an ImageSource, an ImageModel, and an ImagePanel. For the 
 		purposes of this simple use guide, we'll stick with using the ImageIO
-		framework (added in JDK 1.4) and loading a simple JPG image. The 
-		following code is a good example of how this can be done, and is
-		included in the 'examples' directory of the Shimaging distribution and
-		subversion repository.</p>
-		
+		framework and loading a simple JPG image. The
+		following code shows the basic pattern used by the current project.</p>
+
 		<pre>
 	1: ImageSource source = new ImageIOSource(new File("resources/sample.jpg"));
 	2: ImageModel model = new ImageModel(source);
@@ -70,26 +68,26 @@
 	12:}
 		</pre>
 		
-		<p>The created menu will automatically be updated as the JToolbar 
+		<p>The created menu will automatically be updated as the toolbar
 		buttons are updated, enabling and disabling the proper menu items.</p>
 		
-		<h2>Using JAI to load a Multi-page TIFF</h2>
-		<p>Dealing with multi-page TIFF files was the reason Shimaging was 
+		<h2>Using ImageIO to load a multi-page TIFF</h2>
+		<p>Dealing with multi-page TIFF files was the reason Shimaging was
 		originally created. There are a few classes that will let you work 
-		with TIFF Images easily, using JAI-core to load all the pages of the 
+		with TIFF images easily, using ImageIO to load all the pages of the
 		Image. The simplest case of loading a TIFF image from a file...
 		</p>
 		<pre>
 	1: File f = new File("path_to_tiff");
-	2: ImageSource source = new JAITiffImageSource(f);
+	2: ImageSource source = new TiffImageSource(f);
 	// ... Construct an ImageModel & ImagePanel as usual
 		</pre>
 		
-		<p>Of course, JAITiffImageSource also allows for loading from an 
+		<p>Of course, TiffImageSource also allows for loading from an
 		InputStream. This opens up the possibility of using URL.openStream()
 		to load remote objects.</p>
 		
 		<hr>
-		<a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=128730&amp;type=5" width="210" height="62" border="0" alt="SourceForge.net Logo" /></a>
+		<p><a href="../README.md">See the README for current build, test, and run instructions.</a></p>
 	</body>
 </html>

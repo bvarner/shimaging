@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ import javax.swing.JOptionPane;
  * @author Bryan.Varner
  */
 public final class ImagePanel extends JPanel implements ImageEventListener {
+	private static final Logger LOGGER = Logger.getLogger(ImagePanel.class.getName());
+
 	public static final int SCROLL_BLOCK = 0;
 	public static final int SCROLL_UNIT = 1;
 	public static final int SCROLL_MAX = 2;
@@ -200,18 +203,18 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 		mnuImage.setMnemonic(KeyEvent.VK_I);
 		
 		prevPage = createMenuItem("Previous Page", KeyEvent.VK_P,
-								InputEvent.ALT_MASK, actionListener);
+								InputEvent.ALT_DOWN_MASK, actionListener);
 		nextPage = createMenuItem("Next Page", KeyEvent.VK_N,
-								InputEvent.ALT_MASK, actionListener);
-		
+								InputEvent.ALT_DOWN_MASK, actionListener);
+
 		mnuImage.add(prevPage);
 		mnuImage.add(nextPage);
 		mnuImage.addSeparator();
 		
 		zoomIn = createMenuItem("Zoom In", KeyEvent.VK_EQUALS, 
-		                            InputEvent.ALT_MASK, actionListener);
+		                            InputEvent.ALT_DOWN_MASK, actionListener);
 		zoomOut = createMenuItem("Zoom Out", KeyEvent.VK_MINUS,
-		                            InputEvent.ALT_MASK, actionListener);
+		                            InputEvent.ALT_DOWN_MASK, actionListener);
 		mnuImage.add(zoomIn);
 		mnuImage.add(zoomOut);
 		mnuImage.addSeparator();
@@ -222,9 +225,9 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 		lighter = createMenuItem("Brighter", actionListener);
 		darker = createMenuItem("Darker", actionListener);
 		rotateClockwise = createMenuItem("Rotate Clockwise", KeyEvent.VK_X, 
-		                             InputEvent.ALT_MASK, actionListener);
+		                             InputEvent.ALT_DOWN_MASK, actionListener);
 		rotateCounterClockwise = createMenuItem("Rotate Counter-Clockwise",
-								KeyEvent.VK_X, InputEvent.CTRL_MASK, actionListener);
+								KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK, actionListener);
 		mnuImage.add(invert);
 		mnuImage.add(contrastUp);
 		mnuImage.add(contrastDown);
@@ -351,7 +354,7 @@ public final class ImagePanel extends JPanel implements ImageEventListener {
 			
 			updateMenus();
 		} else {
-			System.out.println("Model NULL");
+			LOGGER.fine("Model is null; disabling ImagePanel controls.");
 			btnNext.setEnabled(false);
 			btnPrev.setEnabled(false);
 			btnIn.setEnabled(false);
