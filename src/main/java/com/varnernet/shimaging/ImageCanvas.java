@@ -1,0 +1,232 @@
+package com.varnernet.shimaging;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+
+import javax.swing.JPanel;
+import javax.swing.JViewport;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+
+/**
+ * Used by the ImagePanel to render an ImageModel.
+ * 
+ * ImageCanvas is aware of changes to the JViewport of the JScrollPane that 
+ * contains it, and will set sub-clipping regions on the ImageModel for 
+ * images larger than the size of the canvas.
+ */
+public class ImageCanvas extends JPanel implements Scrollable, ChangeListener {
+	protected ImageModel model;
+	
+	/**
+	 * This is set to the size of a JViewport if one is registered to send us ChangeEvents.
+	 */
+	protected Rectangle viewRect;
+	
+	private boolean allowSubClip;
+
+	private boolean debugClipping;
+		
+	public ImageCanvas() {
+		super();
+		this.model = null;
+		
+		viewRect = new Rectangle();
+		
+		allowSubClip = true;
+
+		debugClipping =
+			   Boolean.parseBoolean(System.getProperty(
+					"com.varnernet.shimaging.ImageCanvas.debugClipping", "false"));
+	}
+	
+	
+	/**
+	 * Set the Model this canvas is responsible for rendering.
+	 * 
+	 * @param model The ImageModel to render.
+	 */
+	public void setModel(final ImageModel model) {
+		this.model = model;
+	}
+	
+	/**
+	 * If true, then if we are added as a ChangeListener to a JViewport, 
+	 * we will invoke setClip() on the ImageModel to set the clipping region
+	 * to that of JViewport. Ideally, we would only receive ChangeEvents for
+	 * a JViewport which is our immediate parent. Override to disable this
+	 * behavior, or make it otherwise conditional.
+	 * 
+	 * @return true
+	 */
+	protected boolean allowClippedMode() {
+		return allowSubClip;
+	}
+	
+	
+	/**
+	 * Programmatically enables / disables subclipping.
+	 */
+	public void setAllowSubClipping(final boolean b) {
+		// If we're allowing clipping and we're making it so we don't, then
+		// we need to immediately clear the clip on the model.
+		if (allowSubClip && !b) {
+			model.clearClip();
+		}
+		this.allowSubClip = b;
+	}
+	
+	/**
+	 * Implements Scrollable
+	 */
+	public Dimension getPreferredScrollableViewportSize() {
+		return getPreferredSize();
+	}
+	
+	
+	/**
+	 * Implements Scrollable
+	 */
+	public int getScrollableBlockIncrement(final Rectangle visibleRect, final int orientation, final int direction) {
+		if (orientation == SwingConstants.VERTICAL) {
+			return visibleRect.height;
+		} else {
+			return visibleRect.width;
+		}
+	}
+	
+	
+	/**
+	 * Implements Scrollable
+	 */
+	public boolean getScrollableTracksViewportHeight() {
+		return false;
+	}
+	
+	
+	/**
+	 * Implements Scrollable
+	 */
+	public boolean getScrollableTracksViewportWidth() {
+		return false;
+	}
+	
+	
+	/**
+	 * Implements Scrollable
+	 */
+	public int getScrollableUnitIncrement(final Rectangle visibleRect, final int orientation, final int direction) {
+		if (orientation == SwingConstants.VERTICAL) {
+			return visibleRect.height / 5;
+		} else {
+			return visibleRect.width / 5;
+		}
+	}
+	
+	
+	/**
+	 * Implements ChangeListener
+	 */
+	public void stateChanged(final ChangeEvent ce) {
+		// If the source was a JViewport, and we allowClippedMode(),
+		// Set the Clip to that of the Viewport's bounds.
+		JViewport viewport = (JViewport)ce.getSource();
+		if (model != null && allowClippedMode()) {
+			model.setClip(viewport.getViewRect());
+		}
+		viewRect = viewport.getViewRect();
+	}
+	
+	
+	/* Overridden JPanel & JComponent methods */
+	/**
+	 * Returns the pageSize of the current ImageModel, or the preferredSize of
+	 * super()
+	 */
+	@Override
+	public Dimension getPreferredSize() {
+		Dimension d = null;
+		if (model != null) {
+			d = model.getPageSize();
+		}
+		
+		if (d == null) {
+			d = super.getPreferredSize();
+		}
+		return d;
+	}
+	
+	public void paintBehindImage(final Graphics g) {
+	}
+	
+	
+	public void paintOverImage(final Graphics g) {
+	}
+	
+	
+	/**
+	 * Overrides the default scrollRectToVisible from JComponent.
+	 * We first apply the active transform from the imageModel (if any) and
+	 * pass the resulting Rect to the super-classes implementation.
+	 */
+	@Override
+	public void scrollRectToVisible(final Rectangle rect) {
+		Rectangle translatedRect = rect;
+		if (model!= null && model.getImage() != null) {
+			translatedRect = model.getTransform().createTransformedShape(rect).getBounds();
+		}
+		super.scrollRectToVisible(translatedRect);
+	}
+	
+	/**
+	 * Paints the current Image of the ImageModel.
+	 */
+	@Override
+	public void paintComponent(final Graphics g) {
+		super.paintComponent(g);
+		if (model != null && model.getImage() != null) {
+			Graphics2D g2d = (Graphics2D)g;
+			if (model.isInverted()) {
+				g2d.setColor(Color.BLACK);
+			} else {
+				g2d.setColor(Color.WHITE);
+			}
+			
+			BufferedImage image = model.getImage();
+			Rectangle clip = model.getClip();
+			
+			if (clip != null) {
+				g2d.fillRect(clip.x, clip.y, image.getWidth(), image.getHeight());
+				
+				paintBehindImage(g);
+				
+				g2d.drawImage(model.getImage(), clip.x, clip.y, null);
+				if (debugClipping) {
+					// draw a red border when using clipping regions.
+					g2d.setColor(Color.RED);
+					g2d.draw(new Rectangle(clip.x, clip.y, image.getWidth() - 1, image.getHeight() - 1));
+				}
+			} else {
+				g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
+				
+				paintBehindImage(g);
+				
+				g2d.drawImage(model.getImage(), 0, 0, null);
+				if (debugClipping) {
+					// draw a green border when NOT using clipping regions.
+					g2d.setColor(Color.GREEN);
+					g2d.draw(new Rectangle(0, 0, image.getWidth() - 1, image.getHeight() - 1));
+				}
+			}
+			
+			paintOverImage(g);
+		}
+	}
+}
