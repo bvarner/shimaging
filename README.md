@@ -18,8 +18,20 @@ This project is configured to publish Maven artifacts to GitHub Packages.
 
 ### Publish from CI
 
-- The workflow at `.github/workflows/publish.yml` publishes on git tags matching `v*` and on manual workflow dispatch.
+- The workflow at `.github/workflows/publish.yml` runs on pushes to `main` and `feature/**`.
+- On `main`, it publishes the base release version from `<revision>` (with `-SNAPSHOT` removed).
+- On `feature/**`, it publishes a `-SNAPSHOT` version.
 - Repository permissions required: `packages: write`.
+
+## CI and Devcontainer Pipeline
+
+This repository now follows the same style as `gerb4j`:
+
+- `.devcontainer/devcontainer.json` uses Java 21 + Maven 3.9.9 and preloads dependencies.
+- `.github/workflows/ci.yml` runs `./mvnw -B verify` in a devcontainer-based job.
+- `.github/workflows/devcontainer.yml` prebuilds and pushes `ghcr.io/bvarner/shimaging-devcontainer`.
+- `.github/workflows/javadoc.yml` generates Maven site output and deploys it to GitHub Pages.
+- `.github/workflows/publish.yml` publishes Maven packages from devcontainer-based CI.
 
 ### Publish locally
 

@@ -2,9 +2,7 @@ name: Publish
 
 on:
   push:
-    tags:
-      - "v*"
-  workflow_dispatch:
+    branches: [ main, 'feature/**' ]
 
 permissions:
   contents: read
@@ -15,32 +13,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run tests
-        run: ./mvnw -B test
+      - name: Determine version
+        id: version
+        run: |
+          BASE_VERSION=$(grep '<revision>' pom.xml | sed 's/.*<revision>\(.*\)<\/revision>.*/\1/')
+          BASE_VERSION="${BASE_VERSION%-SNAPSHOT}"
 
-      - name: Publish to GitHub Packages
-        run: ./mvnw -B -DskipTests deploy --settings .github/settings.xml
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "version=${BASE_VERSION}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${BASE_VERSION}-SNAPSHOT" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Resolved version: ${BASE_VERSION}"
+
+      - name: Build, test, and deploy
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/bvarner/shimaging-devcontainer
+          env: |
+            GITHUB_ACTOR
+            GITHUB_TOKEN
+          runCmd: |
+            ./mvnw -B deploy \
+              -Drevision=${{ steps.version.outputs.version }} \
+              --settings .github/settings.xml
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload packaged artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: shimaging-artifacts
+          name: shimaging-${{ steps.version.outputs.version }}
           path: |
             target/shimaging-*.jar
-            target/shimaging-*-sources.jar
-            target/shimaging-*-javadoc.jar
           retention-days: 30
-

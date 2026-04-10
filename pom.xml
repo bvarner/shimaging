@@ -6,7 +6,7 @@
 
     <groupId>com.varnernet.shimaging</groupId>
     <artifactId>shimaging</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <name>Shimaging</name>
     <description>Shimaging image visualization widgets and image sources.</description>
     <url>https://github.com/bvarner/shimaging</url>
@@ -27,6 +27,7 @@
     </scm>
 
     <properties>
+        <revision>1.0.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
         <maven.min.version>3.6.0</maven.min.version>
